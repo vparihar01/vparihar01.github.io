@@ -142,7 +142,7 @@ http {
 }
 </code></pre>
 
-<p>To run a single application in this server, we can go on and edit the <code>/etc/nginx/sites-available/default</code> file directly, if youâ€™re going to host more than one application in this server you should create separate files for each of them and then symlink them to the <code>/etc/nginx/sites-enabled/</code> folder.</p>
+<p>To run a single application in this server, we can go on and edit the <code>/etc/nginx/sites-available/default</code> file directly, if you are going to host more than one application in this server you should create separate files for each of them and then symlink them to the <code>/etc/nginx/sites-enabled/</code> folder.</p>
 <p>Add a new file <code>unicorn_rails_app.conf</code> in the site-available directory and copy and paste the following into it:</p>
 <pre><code>upstream unicorn_rails_app {
     # fail_timeout=0 means we always retry an upstream even if it failed
@@ -208,7 +208,7 @@ server {
 <p>gem 'rails', '3.2.12'</p>
 <p>gem 'unicorn'</p>
 </blockquote>
-<h4 id="create-the-unicorn-configuration-file-in-your-rails-application-configunicornrb-copy-the-below-lines">Create the Unicorn configuration file in your Railsâ€™ application <code>config/unicorn.rb</code> (copy the below lines):</h4>
+<h4 id="create-the-unicorn-configuration-file-in-your-rails-application-configunicornrb-copy-the-below-lines">Create the Unicorn configuration file in your Rails application <code>config/unicorn.rb</code> (copy the below lines):</h4>
 <pre><code>$ vim config/unicorn.rb
 
 # Unicorn configuration file to be running by unicorn_init.sh with capistrano task
