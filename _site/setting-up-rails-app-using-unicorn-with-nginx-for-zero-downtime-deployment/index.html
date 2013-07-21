@@ -1,7 +1,97 @@
-<h1 id="setting-up-unicorn-with-nginx-for-zero-downtime-deployment---by-github">Setting up Unicorn with Nginx for Zero-Downtime deployment - by Github</h1>
-<p>Unicorn is a traditional UNIX(which makes great use of Unix) prefork web server.No threads are used at all, this makes applications easier to debug and fix.
-## Deploying
-With Unicorn one can deploy with zero downtime. From Unicorn documetation:</p>
+<!doctype html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--> 	
+<html lang="en"> 
+<!--<![endif]-->
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />	<!-- Force Latest IE rendering engine -->
+    <title>Setting up Unicorn with Nginx for Zero-Downtime deployment</title>
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+  
+
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,400,600' rel='stylesheet' type='text/css'>
+    
+    <link rel="shortcut icon" href="/static/images/favicon.png" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" /> 
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <script src="/static/js/tracking.js" type="text/javascript"></script>
+
+    <!--[if IE 7]>
+      <script src="/static/css/font-awesome-ie7.css"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">	
+      <div id='mobile' class='two columns hidden'>
+        <ul>
+          <li><a href='/'>Vparihar01</a></li>
+          <li><span class="gray">Vivek Parihar</span></li>
+          <li><a href="mailto:vivek@weboniselab.com">vivek@weboniselab.com</a></li>
+          <li><a href="http://twitter.com/vparihar">@Vparihar</a></li>
+        </ul>
+      </div>
+
+      <div class="four columns sidebar">
+        <section>
+          <a id="avatar" href="/"></a>
+
+          <ul id="social">
+            <li>
+              <a href="mailto:vivek@weboniselab.com?subject=hi" id="sidebar-email" class="icon-envelope-alt" title="Say hi"></a>
+            </li>
+
+            <li>
+              <a href="http://twitter.com/vparihar" id="sidebar-twitter" class="icon-twitter" title="You should follow me" style="font-size: 28px;"></a>
+            </li>
+
+            <li>
+              <a href="http://github.com/Vparihar01" id="sidebar-github" class="icon-github" title="I share and fork code here"></a>
+            </li>
+
+            <li>
+              <a href="skype:vivek.webonise?add" id="sidebar-skype" class="icon-comment" title="Feel free to add me on Skype"></a>
+            </li>
+
+          </ul>
+
+          <ul id="me">
+            <li>Vivek Parihar</span></li>
+            <li class="gray">Ruby developer.</li>
+          </ul>
+
+        </section>
+      </div>
+
+      <article class='ten columns offset-by-four' id="article-content">
+  <header class="ten columns" id="article-header">
+    <h1>Setting up Unicorn with Nginx for Zero-Downtime deployment</h1>
+  </header>
+
+  <div class='ten columns gray' id="date-header">
+    <p>
+      Jul 2013
+  
+      revised July 2013
+  
+    </p>
+
+  </div>
+
+  <div class="ten columns" id="article-content">
+    <p>Unicorn is a traditional UNIX(which makes great use of Unix) prefork web server.No threads are used at all, this makes applications easier to debug and fix.</p>
+
+<h2 id="deploying">Deploying</h2>
+<p>With Unicorn one can deploy with zero downtime. From Unicorn documetation:</p>
 
 <blockquote>
   <p>You can upgrade Unicorn, your entire application, libraries and even your Ruby interpreter without dropping clients.</p>
@@ -10,61 +100,63 @@ With Unicorn one can deploy with zero downtime. From Unicorn documetation:</p>
 <h2 id="rails-on-unicorns">Rails on Unicorns</h2>
 <p>Now we start setting up rails up using ngnix with unicorn.</p>
 
-<h3 id="installing-nginx">Installing Nginx</h3>
-<p>To install Nginx web server on our ubuntu server:
-<code>
-$ sudo apt-get install nginx
-</code></p>
+<h2 id="installing-nginx">Installing Nginx</h2>
+<p>To install Nginx web server on our ubuntu server:</p>
+
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>sudo apt-get install nginx
+</code></pre></div>
 
 <blockquote>
   <p>We could start the server with the nginx command but the installer also installs an init.d file that we can use to manage our nginx server as well.</p>
 </blockquote>
 
-<p><code>
-$ /etc/init.d/nginx -h
-Usage: nginx {start|stop|restart|reload|force-reload|status|configtest}
-</code></p>
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>/etc/init.d/nginx -h
+Usage: nginx <span class="o">{</span>start|stop|restart|reload|force-reload|status|configtest<span class="o">}</span>
+</code></pre></div>
 
-<p>We can run this<code>init.d</code> command directly or we can interact with it through the service command and we’ll use this to start it up.
-<code>
-$ sudo service nginx start
+<p>We can run this<code>init.d</code> command directly or we can interact with it through the service command and we’ll use this to start it up.</p>
+
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>sudo service nginx start
 Starting nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
-configuration file /etc/nginx/nginx.conf test is successful nginx.
-</code></p>
+configuration file /etc/nginx/nginx.conf <span class="nb">test </span>is successful nginx.
+</code></pre></div>
 
-<h3 id="configuring-nginx-to-run-on-a-port--80">Configuring nginx to run on a port =&gt; 80</h3>
-<p>All main configuration file reside at <code>/etc/nginx/nginx.conf</code> and by default it looks like this:
-```
-$ cat /etc/nginx/nginx.conf
-user nobody nogroup; # for systems with a “nogroup”
-worker_processes  1;</p>
+<h2 id="configuring-nginx-to-run-on-a-port--80">Configuring nginx to run on a port =&gt; 80</h2>
+<p>All main configuration file reside at <code>/etc/nginx/nginx.conf</code> and by default it looks like this:</p>
 
-<p>error_log  /var/log/nginx/error.log;
-pid        /var/run/nginx.pid;</p>
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>cat /etc/nginx/nginx.conf
+user nobody nogroup; <span class="c"># for systems with a &quot;nogroup&quot;</span>
+worker_processes  1;
 
-<p>events {
+error_log  /var/log/nginx/error.log;
+pid        /var/run/nginx.pid;
+
+events <span class="o">{</span>
     worker_connections  1024;
-    # multi_accept on;
-}</p>
+    <span class="c"># multi_accept on;</span>
+<span class="o">}</span>
 
-<p>http {
-    include       /etc/nginx/mime.types;</p>
+http <span class="o">{</span>
+    include       /etc/nginx/mime.types;
 
-<pre><code>access_log        /var/log/nginx/access.log;
+    access_log        /var/log/nginx/access.log;
 
-sendfile        on;
-#tcp_nopush     on;
+    sendfile        on;
+    <span class="c">#tcp_nopush     on;</span>
 
-#keepalive_timeout  0;
-keepalive_timeout  65;
-tcp_nodelay        on;
+    <span class="c">#keepalive_timeout  0;</span>
+    keepalive_timeout  65;
+    tcp_nodelay        on;
 
-gzip  on;
-gzip_disable "MSIE [1-6]\.(?!.*SV1)";
+    gzip  on;
+    gzip_disable <span class="s2">&quot;MSIE [1-6]\.(?!.*SV1)&quot;</span>;
 
-include /etc/nginx/conf.d/*.conf;
-include /etc/nginx/sites-enabled/*; } ``` In `nginx.conf` you may have stumbled upon this line:
-</code></pre>
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+<span class="o">}</span>
+</code></pre></div>
+
+<p>In <code>nginx.conf</code> you may have stumbled upon this line:</p>
 
 <blockquote>
   <p>user nobody nogroup; # for systems with a “nogroup”</p>
@@ -72,128 +164,156 @@ include /etc/nginx/sites-enabled/*; } ``` In `nginx.conf` you may have stumbled 
 
 <p>It’s generally adviced to run as a seperate user for security reasons and increased control. We’ll create an nginx user and a web group.</p>
 
-<p><code>
-$ sudo useradd -s /sbin/nologin -r deploy
-$ sudo usermod -a -G deploy deploy
-</code></p>
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>sudo useradd -s /sbin/nologin -r deploy
+<span class="nv">$ </span>sudo usermod -a -G deploy deploy
+</code></pre></div>
 
-<p>Configure your static path in <code>nginx.conf</code> to <code>/var/www</code>, and change the owner of that directory to the web group:
-<code>
-$ sudo mkdir /var/www
-$ sudo chgrp -R deploy /var/www # set /var/www owner group to "deploy"
-$ sudo chmod -R 775 /var/www # group write permission
-</code>
-&gt; To avoid permission issues we’re going to make Nginx run as “deploy”, the user that’s going to deploy the application code, this way we can rest safely that no “permission denied” on files will ever happen (at least as long as we don’t deploy as another user).</p>
+<p>Configure your static path in <code>nginx.conf</code> to <code>/var/www</code>, and change the owner of that directory to the web group:</p>
 
-<p>Now change this default <code>nginx.conf</code> file like this:
-```
-user  deploy deploy; 
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>sudo mkdir /var/www
+<span class="nv">$ </span>sudo chgrp -R deploy /var/www <span class="c"># set /var/www owner group to &quot;deploy&quot;</span>
+<span class="nv">$ </span>sudo chmod -R 775 /var/www <span class="c"># group write permission</span>
+</code></pre></div>
+
+<blockquote>
+  <p>To avoid permission issues we’re going to make Nginx run as “deploy”, the user that’s going to deploy the application code, this way we can rest safely that no “permission denied” on files will ever happen (at least as long as we don’t deploy as another user).</p>
+</blockquote>
+
+<p>Now change this default <code>nginx.conf</code> file like this:</p>
+
+<div class="highlight"><pre><code class="bash">user  deploy deploy; 
 worker_processes  1;
 worker_priority  -5;
-timer_resolution  100ms;</p>
+timer_resolution  100ms;
+ 
+error_log  /var/log/nginx/error.log;
+ 
+worker_rlimit_nofile 30240; <span class="c"># To enable to open as many files as possible within a single nginx worker process without crashing increase default 1024 value to some higher value</span>
 
-<p>error_log  /var/log/nginx/error.log;</p>
-
-<h1 id="to-enable-to-open-as-many-files-as-possible-within-a-single-nginx-worker-process-without-crashing-increase-default-1024-value-to-some-higher-value">To enable to open as many files as possible within a single nginx worker process without crashing increase default 1024 value to some higher value</h1>
-<p>worker_rlimit_nofile 30240;</p>
-
-<p>events {
+events <span class="o">{</span>
     use  epoll;
     worker_connections  10240;
-}</p>
-
-<p>http {
+<span class="o">}</span>
+ 
+ 
+http <span class="o">{</span>
     client_header_buffer_size 1460;
     client_body_timeout  1460;
     client_max_body_size      25m;
     client_body_buffer_size   128k;
     client_body_temp_path     /tmp/client_body_temp;
-    large_client_header_buffers 8 8m; </p>
-
-<pre><code>include                   mime.types;
-default_type              application/octet-stream;
-keepalive_timeout         1300;
+    large_client_header_buffers 8 8m; 
  
-gzip                      on;
-gzip_http_version         1.1;
-gzip_disable              "msie6";
-gzip_vary                 on;
-gzip_min_length           500; #Compress everything no matter the size
-gzip_buffers              64 8k;
-gzip_comp_level           3;
-gzip_proxied              any;
-gzip_types                text/plain text/css application/x-javascript text/xml application/xml;
+    include                   mime.types;
+    default_type              application/octet-stream;
+    keepalive_timeout         1300;
+ 
+    gzip                      on;
+    gzip_http_version         1.1;
+    gzip_disable              <span class="s2">&quot;msie6&quot;</span>;
+    gzip_vary                 on;
+    gzip_min_length           500; <span class="c">#Compress everything no matter the size</span>
+    gzip_buffers              64 8k;
+    gzip_comp_level           3;
+    gzip_proxied              any;
+    gzip_types                text/plain text/css application/x-javascript text/xml application/xml;
  
  
    
-proxy_connect_timeout  300;
-proxy_send_timeout  300;
-proxy_read_timeout  300;
-proxy_buffering on;
-proxy_buffers 8 16k;
-proxy_buffer_size 32k;
+    proxy_connect_timeout  300;
+    proxy_send_timeout  300;
+    proxy_read_timeout  300;
+    proxy_buffering on;
+    proxy_buffers 8 16k;
+    proxy_buffer_size 32k;
 
  
 
-# For better performance we use Linux sendfile():
-sendfile       on;
+    <span class="c"># For better performance we use Linux sendfile():</span>
+    sendfile       on;
 
-# To send all response headers in one packet. This allows a client to start rendering content immediately after the first packet arrives:
-tcp_nopush     on;
-tcp_nodelay    off;
-
-log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                  '$status $body_bytes_sent "$http_referer" '
-                  '"$http_user_agent" "$http_x_forwarded_for"';
+    <span class="c"># To send all response headers in one packet. This allows a client to start rendering content immediately after the first packet arrives:</span>
+    tcp_nopush     on;
+    tcp_nodelay    off;
+    
+    log_format  main  <span class="s1">&#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#39;</span>
+                      <span class="s1">&#39;$status $body_bytes_sent &quot;$http_referer&quot; &#39;</span>
+                      <span class="s1">&#39;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#39;</span>;
  
-include /etc/nginx/conf.d/*.conf;
-include /etc/nginx/sites-enabled/*;
-</code></pre>
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
 
-<p>}
-```</p>
+<span class="o">}</span>
+</code></pre></div>
 
 <p>To run a single application in this server, we can go on and edit the <code>/etc/nginx/sites-available/default</code> file directly, if you’re going to host more than one application in this server you should create separate files for each of them and then symlink them to the <code>/etc/nginx/sites-enabled/</code> folder.</p>
 
-<p>Add a new file <code>unicorn_rails_app.conf</code> in the site-available directory and copy and paste the following into it:</p>
+<p>Add a new file <code>unicorn_rails_app.conf</code> in the [site-available] directory and copy and paste the following into it:</p>
 
-<p>```
-upstream unicorn_rails_app {
-    # fail_timeout=0 means we always retry an upstream even if it failed
-    # to return a good HTTP response (in case the Unicorn master nukes a
-    # single worker for timing out).</p>
+<div class="highlight"><pre><code class="bash">upstream unicorn_rails_app <span class="o">{</span>
+    <span class="c"># fail_timeout=0 means we always retry an upstream even if it failed</span>
+    <span class="c"># to return a good HTTP response (in case the Unicorn master nukes a</span>
+    <span class="c"># single worker for timing out).</span>
 
-<pre><code># for UNIX domain socket setups:   server unix:/var/www/rails_app/current/tmp/unicorn.rails_app.sock fail_timeout=0; }
-</code></pre>
+    <span class="c"># for UNIX domain socket setups:</span>
+  server unix:/var/www/rails_app/current/tmp/unicorn.rails_app.sock <span class="nv">fail_timeout</span><span class="o">=</span>0;
+<span class="o">}</span>
 
-<p>server {
-  # if you’re running multiple servers, instead of “default” you should
-  # put your main domain name here
-  listen 80 default;</p>
-
-<p># you could put a list of other domain names this application answers
-  server_name your.domain_name.com;</p>
-
-<p># path for static files
+server <span class="o">{</span>
+  <span class="c"># if you&#39;re running multiple servers, instead of &quot;default&quot; you should</span>
+  <span class="c"># put your main domain name here</span>
+  listen 80 default;
+  
+  <span class="c"># you could put a list of other domain names this application answers</span>
+  server_name your.domain_name.com;
+  
+  <span class="c"># path for static files</span>
   root /var/www/rails_app/current/public;
-  access_log /var/log/nginx/rails_app_access.log;</p>
+  access_log /var/log/nginx/rails_app_access.log;
+  
+  location / <span class="o">{</span>
+    proxy_pass http://unicorn_rails_app;            
+    proxy_redirect     off;
+ 
+    proxy_set_header   Host             <span class="nv">$host</span>:<span class="nv">$proxy_port</span>;
+    proxy_set_header   X-Real-IP        <span class="nv">$remote_addr</span>;
+    client_max_body_size 4m;
+  <span class="c">#  proxy_ignore_client_abort on;</span>
+  <span class="o">}</span>
+  <span class="c"># if the request is for a static resource, nginx should serve it directly</span>
+  <span class="c"># and add a far future expires header to it, making the browser</span>
+  <span class="c"># cache the resource and navigate faster over the website</span>
+  location ~ ^/<span class="o">(</span>images|javascripts|stylesheets|system<span class="o">)</span>/  <span class="o">{</span>
+     root /var/www/rails_app/current/public;
+     add_header Last-Modified <span class="s2">&quot;&quot;</span>;
+     add_header ETag <span class="s2">&quot;&quot;</span>;
+     expires max;
+     <span class="nb">break</span>;
+  <span class="o">}</span>
+  <span class="c"># Rails error pages</span>
+  error_page 500 502 503 504 /500.html;
+  <span class="nv">location</span> <span class="o">=</span> /500.html <span class="o">{</span>
+    root /path/to/app/current/public;
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
 
-<p>location / {
-    proxy_pass http://unicorn_rails_app;          <br />
-    proxy_redirect     off;</p>
+<p>After creating this new file <code>unicorn_rails_app.conf</code>, we need to symlink it to the sites-enabled directory:</p>
 
-<pre><code>proxy_set_header   Host             $host:$proxy_port;
-proxy_set_header   X-Real-IP        $remote_addr;
-client_max_body_size 4m;   #  proxy_ignore_client_abort on;   }   # if the request is for a static resource, nginx should serve it directly   # and add a far future expires header to it, making the browser   # cache the resource and navigate faster over the website   location ~ ^/(images|javascripts|stylesheets|system)/  {
- root /var/www/rails_app/current/public;
- add_header Last-Modified "";
- add_header ETag "";
- expires max;
- break;   }   # Rails error pages   error_page 500 502 503 504 /500.html;   location = /500.html {
-root /path/to/app/current/public;   } } ``` After creating this new file `unicorn_rails_app.conf`, we need to symlink it to the sites-enabled directory: ``` $ sudo ln -s /etc/nginx/sites-available/unicorn_rails_app.conf /etc/nginx/sites-enabled/unicorn_rails_app.conf ``` ### Unicorn setup Now we have nginx running. Install the Unicorn gem: ``` $ gem install unicorn ``` Add the unicorn gem to your Rails application’s Gemfile
-</code></pre>
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>sudo ln -s /etc/nginx/sites-available/unicorn_rails_app.conf /etc/nginx/sites-enabled/unicorn_rails_app.conf
+</code></pre></div>
 
-<h4 id="gemfile">Gemfile</h4>
+<h2 id="unicorn-setup">Unicorn setup</h2>
+<blockquote>
+  <p>Now we have nginx running. Install the Unicorn gem:</p>
+</blockquote>
+
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>gem install unicorn
+</code></pre></div>
+
+<p>Add the unicorn gem to your Rails application’s Gemfile</p>
+
+<h3 id="gemfile">Gemfile</h3>
 <blockquote>
   <p>source ‘https://rubygems.org’</p>
 </blockquote>
@@ -206,136 +326,171 @@ root /path/to/app/current/public;   } } ``` After creating this new file `unicor
   <p>gem ‘unicorn’</p>
 </blockquote>
 
-<h4 id="create-the-unicorn-configuration-file-in-your-rails-application-configunicornrb-copy-the-below-lines">Create the Unicorn configuration file in your Rails’ application <code>config/unicorn.rb</code> (copy the below lines):</h4>
-<p>```
-$ vim config/unicorn.rb</p>
+<h3 id="creating-unicorn-configuration-file">Creating Unicorn configuration file</h3>
+<p>Create unicorn configuration file in your Rails’ application <code>config/unicorn.rb</code> (copy the below lines):</p>
 
-<h1 id="unicorn-configuration-file-to-be-running-by-unicorninitsh-with-capistrano-task">Unicorn configuration file to be running by unicorn_init.sh with capistrano task</h1>
-<p># read an example configuration before: http://unicorn.bogomips.org/examples/unicorn.conf.rb
-# 
-# working_directory, pid, paths - internal Unicorn variables must to setup
-# worker_process 4              - is good enough for serve small production application
-# timeout 30                    - time limit when unresponded workers to restart
-# preload_app true              - the most interesting option that confuse a lot of us,
-#                                 just setup is as true always, it means extra work on 
-#                                 deployment scripts to make it correctly
-# BUNDLE_GEMFILE                - make Gemfile accessible with new master
-# before_fork, after_fork       - reconnect to all dependent services: DB, Redis, Sphinx etc.
-#                                 deal with old_pid only if CPU or RAM are limited enough
-#
-# config/server/production/unicorn.rb</p>
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>vim config/unicorn.rb
+</code></pre></div>
 
-<p>app_path          = “/var/www/rails_app/current”</p>
+<div class="highlight"><pre><code class="ruby"><span class="c1"># Unicorn configuration file to be running by unicorn_init.sh with capistrano task</span>
+<span class="c1"># read an example configuration before: http://unicorn.bogomips.org/examples/unicorn.conf.rb</span>
+<span class="c1"># </span>
+<span class="c1"># working_directory, pid, paths - internal Unicorn variables must to setup</span>
+<span class="c1"># worker_process 4              - is good enough for serve small production application</span>
+<span class="c1"># timeout 30                    - time limit when unresponded workers to restart</span>
+<span class="c1"># preload_app true              - the most interesting option that confuse a lot of us,</span>
+<span class="c1">#                                 just setup is as true always, it means extra work on </span>
+<span class="c1">#                                 deployment scripts to make it correctly</span>
+<span class="c1"># BUNDLE_GEMFILE                - make Gemfile accessible with new master</span>
+<span class="c1"># before_fork, after_fork       - reconnect to all dependent services: DB, Redis, Sphinx etc.</span>
+<span class="c1">#                                 deal with old_pid only if CPU or RAM are limited enough</span>
+<span class="c1">#</span>
+<span class="c1"># config/server/production/unicorn.rb</span>
+ 
+ 
+<span class="n">app_path</span>          <span class="o">=</span> <span class="s2">&quot;/var/www/rails_app/current&quot;</span>
+ 
+<span class="n">working_directory</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">app_path</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="n">pid</span>               <span class="s2">&quot;</span><span class="si">#{</span><span class="n">app_path</span><span class="si">}</span><span class="s2">/tmp/pids/unicorn.pid&quot;</span>
+<span class="n">stderr_path</span>       <span class="s2">&quot;</span><span class="si">#{</span><span class="n">app_path</span><span class="si">}</span><span class="s2">/log/unicorn.log&quot;</span>
+<span class="n">stdout_path</span>       <span class="s2">&quot;</span><span class="si">#{</span><span class="n">app_path</span><span class="si">}</span><span class="s2">/log/unicorn.log&quot;</span>
+ 
+<span class="n">listen</span>            <span class="s2">&quot;</span><span class="si">#{</span><span class="n">app_path</span><span class="si">}</span><span class="s2">/tmp/unicorn.rails_app.sock&quot;</span> <span class="p">,</span> <span class="ss">:backlog</span> <span class="o">=&gt;</span> <span class="mi">64</span>
 
-<p>working_directory “#{app_path}”
-pid               “#{app_path}/tmp/pids/unicorn.pid”
-stderr_path       “#{app_path}/log/unicorn.log”
-stdout_path       “#{app_path}/log/unicorn.log”</p>
+<span class="n">user</span> <span class="s1">&#39;deploy&#39;</span><span class="p">,</span><span class="s1">&#39;deploy&#39;</span>
+<span class="c1">#listen 80, :tcp_nopush =&gt; true </span>
+<span class="c1">#listen 8080, :tcp_nopush =&gt; true</span>
+<span class="n">worker_processes</span>  <span class="mi">4</span>
+<span class="n">timeout</span>           <span class="mi">600</span>
+<span class="n">preload_app</span>       <span class="kp">true</span>
+<span class="no">GC</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="ss">:copy_on_write_friendly</span><span class="o">=</span><span class="p">)</span> <span class="ow">and</span>
+  <span class="no">GC</span><span class="o">.</span><span class="n">copy_on_write_friendly</span> <span class="o">=</span> <span class="kp">true</span>
+<span class="n">before_fork</span> <span class="k">do</span> <span class="o">|</span><span class="n">server</span><span class="p">,</span> <span class="n">worker</span><span class="o">|</span>
+  <span class="c1"># the following is highly recomended for Rails + &quot;preload_app true&quot;</span>
+  <span class="c1"># as there&#39;s no need for the master process to hold a connection</span>
+  <span class="n">defined?</span><span class="p">(</span><span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span><span class="p">)</span> <span class="ow">and</span>
+    <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">disconnect!</span>
+<span class="k">end</span>
 
-<p>listen            “#{app_path}/tmp/unicorn.rails_app.sock” , :backlog =&gt; 64</p>
+<span class="n">after_fork</span> <span class="k">do</span> <span class="o">|</span><span class="n">server</span><span class="p">,</span> <span class="n">worker</span><span class="o">|</span>
+  <span class="c1"># per-process listener ports for debugging/admin/migrations</span>
+  <span class="c1"># addr = &quot;127.0.0.1:#{9293 + worker.nr}&quot;</span>
+  <span class="c1"># server.listen(addr, :tries =&gt; -1, :delay =&gt; 5, :tcp_nopush =&gt; true)</span>
 
-<p>user ‘deploy’,’deploy’
-#listen 80, :tcp_nopush =&gt; true 
-#listen 8080, :tcp_nopush =&gt; true
-worker_processes  4
-timeout           600
-preload_app       true
-GC.respond_to?(:copy_on_write_friendly=) and
-  GC.copy_on_write_friendly = true
-before_fork do |server, worker|
-  # the following is highly recomended for Rails + “preload_app true”
-  # as there’s no need for the master process to hold a connection
-  defined?(ActiveRecord::Base) and
-    ActiveRecord::Base.connection.disconnect!
-end</p>
+  <span class="c1"># the following is *required* for Rails + &quot;preload_app true&quot;,</span>
+  <span class="n">defined?</span><span class="p">(</span><span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span><span class="p">)</span> <span class="ow">and</span>
+    <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span><span class="o">.</span><span class="n">establish_connection</span>
 
-<p>after_fork do |server, worker|
-  # per-process listener ports for debugging/admin/migrations
-  # addr = “127.0.0.1:#{9293 + worker.nr}”
-  # server.listen(addr, :tries =&gt; -1, :delay =&gt; 5, :tcp_nopush =&gt; true)</p>
+  <span class="c1"># if preload_app is true, then you may also want to check and</span>
+  <span class="c1"># restart any other shared sockets/descriptors such as Memcached,</span>
+  <span class="c1"># and Redis.  TokyoCabinet file handles are safe to reuse</span>
+  <span class="c1"># between any number of forked children (assuming your kernel</span>
+  <span class="c1"># correctly implements pread()/pwrite() system calls)</span>
+<span class="k">end</span>
+</code></pre></div>
 
-<p># the following is <em>required</em> for Rails + “preload_app true”,
-  defined?(ActiveRecord::Base) and
-    ActiveRecord::Base.establish_connection</p>
+<blockquote>
+  <p>Then Unicorn is configured!</p>
+</blockquote>
 
-<p># if preload_app is true, then you may also want to check and
-  # restart any other shared sockets/descriptors such as Memcached,
-  # and Redis.  TokyoCabinet file handles are safe to reuse
-  # between any number of forked children (assuming your kernel
-  # correctly implements pread()/pwrite() system calls)
-end
-```
-&gt; Then Unicorn is configured!</p>
+<h3 id="create-a-unicorn-initializer-script">Create a Unicorn initializer script</h3>
+<blockquote>
+  <table>
+    <tbody>
+      <tr>
+        <td>Create a Unicorn initializer shell script in the <code>/var/www/rails_app/current/config</code> directory to start</td>
+        <td>stop</td>
+        <td>restart unicorn processes:</td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
 
-<h4 id="create-a-unicorn-initializer-shell-script-in-the-varwwwrailsappcurrentconfig-directory-to-startstoprestart-unicorn-processes">Create a Unicorn initializer shell script in the <code>/var/www/rails_app/current/config</code> directory to start|stop|restart unicorn processes:</h4>
-<p>```
-$ touch /var/www/rails_app/current/config/unicorn</p>
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>touch /var/www/rails_app/current/config/unicorn
 
-<p>$ vim /var/www/rails_app/current/config/unicorn
-```
-#### Paste the following into that new file:</p>
+<span class="nv">$ </span>vim /var/www/rails_app/current/config/unicorn
+</code></pre></div>
 
-<p>```
-#! /bin/bash</p>
+<h3 id="paste-the-following-into-that-new-file">Paste the following into that new file:</h3>
 
-<h3 id="begin-init-info">BEGIN INIT INFO</h3>
-<p># Provides:          unicorn
-# Required-Start:    $local_fs $remote_fs $network $syslog
-# Required-Stop:     $local_fs $remote_fs $network $syslog
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: starts the unicorn web server
-# Description:       starts unicorn
-### END INIT INFO</p>
+<div class="highlight"><pre><code class="bash"><span class="c">#! /bin/bash</span>
 
-<p>APP_ROOT=”/var/www/rails_app”
-USER=”deploy”
-DAEMON=unicorn_rails
-DAEMON_OPTS=”-c $APP_ROOT/shared/config/unicorn.rb -E staging -D”
-NAME=unicorn
-DESC=”Unicorn app for $USER”
-PID=$APP_ROOT/shared/pids/unicorn.pid</p>
+<span class="c">### BEGIN INIT INFO</span>
+<span class="c"># Provides:          unicorn</span>
+<span class="c"># Required-Start:    $local_fs $remote_fs $network $syslog</span>
+<span class="c"># Required-Stop:     $local_fs $remote_fs $network $syslog</span>
+<span class="c"># Default-Start:     2 3 4 5</span>
+<span class="c"># Default-Stop:      0 1 6</span>
+<span class="c"># Short-Description: starts the unicorn web server</span>
+<span class="c"># Description:       starts unicorn</span>
+<span class="c">### END INIT INFO</span>
 
-<p>case “$1” in
-  start)
-        CD_TO_APP_DIR=”cd $APP_ROOT”
-        START_DAEMON_PROCESS=”bundle exec $DAEMON $DAEMON_OPTS”</p>
+<span class="nv">APP_ROOT</span><span class="o">=</span><span class="s2">&quot;/var/www/rails_app&quot;</span>
+<span class="nv">USER</span><span class="o">=</span><span class="s2">&quot;deploy&quot;</span>
+<span class="nv">DAEMON</span><span class="o">=</span>unicorn_rails
+<span class="nv">DAEMON_OPTS</span><span class="o">=</span><span class="s2">&quot;-c $APP_ROOT/shared/config/unicorn.rb -E staging -D&quot;</span>
+<span class="nv">NAME</span><span class="o">=</span>unicorn
+<span class="nv">DESC</span><span class="o">=</span><span class="s2">&quot;Unicorn app for $USER&quot;</span>
+<span class="nv">PID</span><span class="o">=</span><span class="nv">$APP_ROOT</span>/shared/pids/unicorn.pid
 
-<pre><code>    echo -n "Starting $DESC: "
-    if [ `whoami` = root ]; then
-      su - $USER -c "$CD_TO_APP_DIR &gt; /dev/null 2&gt;&amp;1 &amp;&amp; $START_DAEMON_PROCESS"
-    else
-      $CD_TO_APP_DIR &gt; /dev/null 2&gt;&amp;1 &amp;&amp; $START_DAEMON_PROCESS
-    fi
-    echo "$NAME."
-    ;;   stop)
-    echo -n "Stopping $DESC: "
-    kill -QUIT `cat $PID`
-    echo "$NAME."
-    ;;   restart)
-    echo -n "Restarting $DESC: "
-    kill -USR2 `cat $PID`
-    echo "$NAME."
-    ;;   reload)
-    echo -n "Reloading $DESC configuration: "
-    kill -HUP `cat $PID`
-    echo "$NAME."
-    ;;   *)
-    echo "Usage: $NAME {start|stop|restart|reload}" &gt;&amp;2
-    exit 1
-    ;; esac
-</code></pre>
+<span class="k">case</span> <span class="s2">&quot;$1&quot;</span> in
+  start<span class="o">)</span>
+        <span class="nv">CD_TO_APP_DIR</span><span class="o">=</span><span class="s2">&quot;cd $APP_ROOT&quot;</span>
+        <span class="nv">START_DAEMON_PROCESS</span><span class="o">=</span><span class="s2">&quot;bundle exec $DAEMON $DAEMON_OPTS&quot;</span>
 
-<p>exit 0
-<code>
-#### Start nginx server
-Start your nginx server from its installation directory:
-</code>
-$ /etc/init.d/nginx restart
-```
-#### Start Unicorn server
-Start your Unicorn server from your Rails application directory, with no port specified (it will use the Unix socket from its configuration instead):</p>
+        <span class="nb">echo</span> -n <span class="s2">&quot;Starting $DESC: &quot;</span>
+        <span class="k">if</span> <span class="o">[</span> <span class="sb">`</span>whoami<span class="sb">`</span> <span class="o">=</span> root <span class="o">]</span>; <span class="k">then</span>
+<span class="k">          </span>su - <span class="nv">$USER</span> -c <span class="s2">&quot;$CD_TO_APP_DIR &gt; /dev/null 2&gt;&amp;1 &amp;&amp; $START_DAEMON_PROCESS&quot;</span>
+        <span class="k">else</span>
+          <span class="nv">$CD_TO_APP_DIR</span> &gt; /dev/null 2&gt;&amp;1 <span class="o">&amp;&amp;</span> <span class="nv">$START_DAEMON_PROCESS</span>
+        <span class="k">fi</span>
+<span class="k">        </span><span class="nb">echo</span> <span class="s2">&quot;$NAME.&quot;</span>
+        ;;
+  stop<span class="o">)</span>
+        <span class="nb">echo</span> -n <span class="s2">&quot;Stopping $DESC: &quot;</span>
+        <span class="nb">kill</span> -QUIT <span class="sb">`</span>cat <span class="nv">$PID</span><span class="sb">`</span>
+        <span class="nb">echo</span> <span class="s2">&quot;$NAME.&quot;</span>
+        ;;
+  restart<span class="o">)</span>
+        <span class="nb">echo</span> -n <span class="s2">&quot;Restarting $DESC: &quot;</span>
+        <span class="nb">kill</span> -USR2 <span class="sb">`</span>cat <span class="nv">$PID</span><span class="sb">`</span>
+        <span class="nb">echo</span> <span class="s2">&quot;$NAME.&quot;</span>
+        ;;
+  reload<span class="o">)</span>
+        <span class="nb">echo</span> -n <span class="s2">&quot;Reloading $DESC configuration: &quot;</span>
+        <span class="nb">kill</span> -HUP <span class="sb">`</span>cat <span class="nv">$PID</span><span class="sb">`</span>
+        <span class="nb">echo</span> <span class="s2">&quot;$NAME.&quot;</span>
+        ;;
+  *<span class="o">)</span>
+        <span class="nb">echo</span> <span class="s2">&quot;Usage: $NAME {start|stop|restart|reload}&quot;</span> &gt;&amp;2
+        <span class="nb">exit </span>1
+        ;;
+<span class="k">esac</span>
 
-<p><code>
-$ unicorn_rails -E production -D -c /var/www/rails_app/current/config/unicorn.rb
-</code></p>
+<span class="nb">exit </span>0
+</code></pre></div>
+
+<h2 id="start-nginx-server">Start nginx server</h2>
+<p>Start your nginx server from its installation directory:</p>
+
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>/etc/init.d/nginx restart
+</code></pre></div>
+
+<h2 id="start-unicorn-server">Start Unicorn server</h2>
+<p>Start your Unicorn server from your Rails application directory, with no port specified (it will use the Unix socket from its configuration instead):</p>
+
+<div class="highlight"><pre><code class="bash"><span class="nv">$ </span>unicorn_rails -E production -D -c /var/www/rails_app/current/config/unicorn.rb
+</code></pre></div>
+
+  </div>
+
+  <footer class="ten columns">
+    <p id='follow'>
+      You should follow me on Twitter <a href="http://twitter.com/Vparihar">here.</a>
+    </p>
+  </footer>
+</article>
+
+    </div>
+  </body>
+</html> 

@@ -1,0 +1,347 @@
+---
+layout: post
+title: Setting up Unicorn with Nginx for Zero-Downtime deployment
+updated_at: "July 2013"
+---
+<h1 id="setting-up-unicorn-with-nginx-for-zero-downtime-deployment-by-github">Setting up Unicorn with Nginx for Zero-Downtime deployment - by Github</h1>
+<p>Unicorn is a traditional UNIX(which makes great use of Unix) prefork web server.No threads are used at all, this makes applications easier to debug and fix.</p>
+<h2 id="deploying">Deploying</h2>
+<p>With Unicorn one can deploy with zero downtime. From Unicorn documetation:</p>
+<blockquote>
+<p>You can upgrade Unicorn, your entire application, libraries and even your Ruby interpreter without dropping clients.</p>
+</blockquote>
+<h2 id="rails-on-unicorns">Rails on Unicorns</h2>
+<p>Now we start setting up rails up using ngnix with unicorn.</p>
+<h3 id="installing-nginx">Installing Nginx</h3>
+<p>To install Nginx web server on our ubuntu server:</p>
+<pre><code>$ sudo apt-get install nginx
+</code></pre>
+
+<blockquote>
+<p>We could start the server with the nginx command but the installer also installs an init.d file that we can use to manage our nginx server as well.</p>
+</blockquote>
+<pre><code>$ /etc/init.d/nginx -h
+Usage: nginx {start|stop|restart|reload|force-reload|status|configtest}
+</code></pre>
+
+<p>We can run this<code>init.d</code> command directly or we can interact with it through the service command and weâ€™ll use this to start it up.</p>
+<pre><code>$ sudo service nginx start
+Starting nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+configuration file /etc/nginx/nginx.conf test is successful nginx.
+</code></pre>
+
+<h3 id="configuring-nginx-to-run-on-a-port-80">Configuring nginx to run on a port =&gt; 80</h3>
+<p>All main configuration file reside at <code>/etc/nginx/nginx.conf</code> and by default it looks like this:</p>
+<pre><code>$ cat /etc/nginx/nginx.conf
+user nobody nogroup; # for systems with a &quot;nogroup&quot;
+worker_processes  1;
+
+error_log  /var/log/nginx/error.log;
+pid        /var/run/nginx.pid;
+
+events {
+    worker_connections  1024;
+    # multi_accept on;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+
+    access_log        /var/log/nginx/access.log;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+    tcp_nodelay        on;
+
+    gzip  on;
+    gzip_disable &quot;MSIE [1-6]\.(?!.*SV1)&quot;;
+
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+}
+</code></pre>
+
+<p>In <code>nginx.conf</code> you may have stumbled upon this line:</p>
+<blockquote>
+<p>user nobody nogroup; # for systems with a "nogroup"</p>
+</blockquote>
+<p>Itâ€™s generally adviced to run as a seperate user for security reasons and increased control. Weâ€™ll create an nginx user and a web group.</p>
+<pre><code>$ sudo useradd -s /sbin/nologin -r deploy
+$ sudo usermod -a -G deploy deploy
+</code></pre>
+
+<p>Configure your static path in <code>nginx.conf</code> to <code>/var/www</code>, and change the owner of that directory to the web group:</p>
+<pre><code>$ sudo mkdir /var/www
+$ sudo chgrp -R deploy /var/www # set /var/www owner group to &quot;deploy&quot;
+$ sudo chmod -R 775 /var/www # group write permission
+</code></pre>
+
+<blockquote>
+<p>To avoid permission issues weâ€™re going to make Nginx run as â€œdeployâ€, the user thatâ€™s going to deploy the application code, this way we can rest safely that no â€œpermission deniedâ€ on files will ever happen (at least as long as we donâ€™t deploy as another user).</p>
+</blockquote>
+<p>Now change this default <code>nginx.conf</code> file like this:</p>
+<pre><code>user  deploy deploy; 
+worker_processes  1;
+worker_priority  -5;
+timer_resolution  100ms;
+
+error_log  /var/log/nginx/error.log;
+
+# To enable to open as many files as possible within a single nginx worker process without crashing increase default 1024 value to some higher value
+worker_rlimit_nofile 30240;
+
+events {
+    use  epoll;
+    worker_connections  10240;
+}
+
+http {
+    client_header_buffer_size 1460;
+    client_body_timeout  1460;
+    client_max_body_size      25m;
+    client_body_buffer_size   128k;
+    client_body_temp_path     /tmp/client_body_temp;
+    large_client_header_buffers 8 8m; 
+
+    include                   mime.types;
+    default_type              application/octet-stream;
+    keepalive_timeout         1300;
+
+    gzip                      on;
+    gzip_http_version         1.1;
+    gzip_disable              &quot;msie6&quot;;
+    gzip_vary                 on;
+    gzip_min_length           500; #Compress everything no matter the size
+    gzip_buffers              64 8k;
+    gzip_comp_level           3;
+    gzip_proxied              any;
+    gzip_types                text/plain text/css application/x-javascript text/xml application/xml;
+
+    proxy_connect_timeout  300;
+    proxy_send_timeout  300;
+    proxy_read_timeout  300;
+    proxy_buffering on;
+    proxy_buffers 8 16k;
+    proxy_buffer_size 32k;
+
+    # For better performance we use Linux sendfile():
+    sendfile       on;
+
+    # To send all response headers in one packet. This allows a client to start rendering content immediately after the first packet arrives:
+    tcp_nopush     on;
+    tcp_nodelay    off;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] &quot;$request&quot; '
+                      '$status $body_bytes_sent &quot;$http_referer&quot; '
+                      '&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;';
+
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+
+}
+</code></pre>
+
+<p>To run a single application in this server, we can go on and edit the <code>/etc/nginx/sites-available/default</code> file directly, if youâ€™re going to host more than one application in this server you should create separate files for each of them and then symlink them to the <code>/etc/nginx/sites-enabled/</code> folder.</p>
+<p>Add a new file <code>unicorn_rails_app.conf</code> in the site-available directory and copy and paste the following into it:</p>
+<pre><code>upstream unicorn_rails_app {
+    # fail_timeout=0 means we always retry an upstream even if it failed
+    # to return a good HTTP response (in case the Unicorn master nukes a
+    # single worker for timing out).
+
+    # for UNIX domain socket setups:
+  server unix:/var/www/rails_app/current/tmp/unicorn.rails_app.sock fail_timeout=0;
+}
+
+server {
+  # if you're running multiple servers, instead of &quot;default&quot; you should
+  # put your main domain name here
+  listen 80 default;
+
+  # you could put a list of other domain names this application answers
+  server_name your.domain_name.com;
+
+  # path for static files
+  root /var/www/rails_app/current/public;
+  access_log /var/log/nginx/rails_app_access.log;
+
+  location / {
+    proxy_pass http://unicorn_rails_app;            
+    proxy_redirect     off;
+
+    proxy_set_header   Host             $host:$proxy_port;
+    proxy_set_header   X-Real-IP        $remote_addr;
+    client_max_body_size 4m;
+  #  proxy_ignore_client_abort on;
+  }
+  # if the request is for a static resource, nginx should serve it directly
+  # and add a far future expires header to it, making the browser
+  # cache the resource and navigate faster over the website
+  location ~ ^/(images|javascripts|stylesheets|system)/  {
+     root /var/www/rails_app/current/public;
+     add_header Last-Modified &quot;&quot;;
+     add_header ETag &quot;&quot;;
+     expires max;
+     break;
+  }
+  # Rails error pages
+  error_page 500 502 503 504 /500.html;
+  location = /500.html {
+    root /path/to/app/current/public;
+  }
+}
+</code></pre>
+
+<p>After creating this new file <code>unicorn_rails_app.conf</code>, we need to symlink it to the sites-enabled directory:</p>
+<pre><code>$ sudo ln -s /etc/nginx/sites-available/unicorn_rails_app.conf /etc/nginx/sites-enabled/unicorn_rails_app.conf
+</code></pre>
+
+<h3 id="unicorn-setup">Unicorn setup</h3>
+<p>Now we have nginx running. Install the Unicorn gem:</p>
+<pre><code>$ gem install unicorn
+</code></pre>
+
+<p>Add the unicorn gem to your Rails applicationâ€™s Gemfile</p>
+<h4 id="gemfile">Gemfile</h4>
+<blockquote>
+<p>source 'https://rubygems.org'</p>
+<p>gem 'rails', '3.2.12'</p>
+<p>gem 'unicorn'</p>
+</blockquote>
+<h4 id="create-the-unicorn-configuration-file-in-your-rails-application-configunicornrb-copy-the-below-lines">Create the Unicorn configuration file in your Railsâ€™ application <code>config/unicorn.rb</code> (copy the below lines):</h4>
+<pre><code>$ vim config/unicorn.rb
+
+# Unicorn configuration file to be running by unicorn_init.sh with capistrano task
+# read an example configuration before: http://unicorn.bogomips.org/examples/unicorn.conf.rb
+# 
+# working_directory, pid, paths - internal Unicorn variables must to setup
+# worker_process 4              - is good enough for serve small production application
+# timeout 30                    - time limit when unresponded workers to restart
+# preload_app true              - the most interesting option that confuse a lot of us,
+#                                 just setup is as true always, it means extra work on 
+#                                 deployment scripts to make it correctly
+# BUNDLE_GEMFILE                - make Gemfile accessible with new master
+# before_fork, after_fork       - reconnect to all dependent services: DB, Redis, Sphinx etc.
+#                                 deal with old_pid only if CPU or RAM are limited enough
+#
+# config/server/production/unicorn.rb
+
+app_path          = &quot;/var/www/rails_app/current&quot;
+
+working_directory &quot;#{app_path}&quot;
+pid               &quot;#{app_path}/tmp/pids/unicorn.pid&quot;
+stderr_path       &quot;#{app_path}/log/unicorn.log&quot;
+stdout_path       &quot;#{app_path}/log/unicorn.log&quot;
+
+listen            &quot;#{app_path}/tmp/unicorn.rails_app.sock&quot; , :backlog =&gt; 64
+
+user 'deploy','deploy'
+#listen 80, :tcp_nopush =&gt; true 
+#listen 8080, :tcp_nopush =&gt; true
+worker_processes  4
+timeout           600
+preload_app       true
+GC.respond_to?(:copy_on_write_friendly=) and
+  GC.copy_on_write_friendly = true
+before_fork do |server, worker|
+  # the following is highly recomended for Rails + &quot;preload_app true&quot;
+  # as there's no need for the master process to hold a connection
+  defined?(ActiveRecord::Base) and
+    ActiveRecord::Base.connection.disconnect!
+end
+
+after_fork do |server, worker|
+  # per-process listener ports for debugging/admin/migrations
+  # addr = &quot;127.0.0.1:#{9293 + worker.nr}&quot;
+  # server.listen(addr, :tries =&gt; -1, :delay =&gt; 5, :tcp_nopush =&gt; true)
+
+  # the following is *required* for Rails + &quot;preload_app true&quot;,
+  defined?(ActiveRecord::Base) and
+    ActiveRecord::Base.establish_connection
+
+  # if preload_app is true, then you may also want to check and
+  # restart any other shared sockets/descriptors such as Memcached,
+  # and Redis.  TokyoCabinet file handles are safe to reuse
+  # between any number of forked children (assuming your kernel
+  # correctly implements pread()/pwrite() system calls)
+end
+</code></pre>
+
+<blockquote>
+<p>Then Unicorn is configured!</p>
+</blockquote>
+<h4 id="create-a-unicorn-initializer-shell-script-in-the-varwwwrails_appcurrentconfig-directory-to-startstoprestart-unicorn-processes">Create a Unicorn initializer shell script in the <code>/var/www/rails_app/current/config</code> directory to start|stop|restart unicorn processes:</h4>
+<pre><code>$ touch /var/www/rails_app/current/config/unicorn
+
+$ vim /var/www/rails_app/current/config/unicorn
+</code></pre>
+
+<h4 id="paste-the-following-into-that-new-file">Paste the following into that new file:</h4>
+<pre><code>#! /bin/bash
+
+### BEGIN INIT INFO
+# Provides:          unicorn
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts the unicorn web server
+# Description:       starts unicorn
+### END INIT INFO
+
+APP_ROOT=&quot;/var/www/rails_app&quot;
+USER=&quot;deploy&quot;
+DAEMON=unicorn_rails
+DAEMON_OPTS=&quot;-c $APP_ROOT/shared/config/unicorn.rb -E staging -D&quot;
+NAME=unicorn
+DESC=&quot;Unicorn app for $USER&quot;
+PID=$APP_ROOT/shared/pids/unicorn.pid
+
+case &quot;$1&quot; in
+  start)
+        CD_TO_APP_DIR=&quot;cd $APP_ROOT&quot;
+        START_DAEMON_PROCESS=&quot;bundle exec $DAEMON $DAEMON_OPTS&quot;
+
+        echo -n &quot;Starting $DESC: &quot;
+        if [ `whoami` = root ]; then
+          su - $USER -c &quot;$CD_TO_APP_DIR &gt; /dev/null 2&gt;&amp;1 &amp;&amp; $START_DAEMON_PROCESS&quot;
+        else
+          $CD_TO_APP_DIR &gt; /dev/null 2&gt;&amp;1 &amp;&amp; $START_DAEMON_PROCESS
+        fi
+        echo &quot;$NAME.&quot;
+        ;;
+  stop)
+        echo -n &quot;Stopping $DESC: &quot;
+        kill -QUIT `cat $PID`
+        echo &quot;$NAME.&quot;
+        ;;
+  restart)
+        echo -n &quot;Restarting $DESC: &quot;
+        kill -USR2 `cat $PID`
+        echo &quot;$NAME.&quot;
+        ;;
+  reload)
+        echo -n &quot;Reloading $DESC configuration: &quot;
+        kill -HUP `cat $PID`
+        echo &quot;$NAME.&quot;
+        ;;
+  *)
+        echo &quot;Usage: $NAME {start|stop|restart|reload}&quot; &gt;&amp;2
+        exit 1
+        ;;
+esac
+
+exit 0
+</code></pre>
+
+<h4 id="start-nginx-server">Start nginx server</h4>
+<p>Start your nginx server from its installation directory:</p>
+<pre><code>$ /etc/init.d/nginx restart
+</code></pre>
+
+<h4 id="start-unicorn-server">Start Unicorn server</h4>
+<p>Start your Unicorn server from your Rails application directory, with no port specified (it will use the Unix socket from its configuration instead):</p>
+<pre><code>$ unicorn_rails -E production -D -c /var/www/rails_app/current/config/unicorn.rb
+</code></pre>
