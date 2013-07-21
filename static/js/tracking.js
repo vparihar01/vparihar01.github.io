@@ -13,7 +13,6 @@ window.onload = function() {
   createEvent("sidebar-twitter", "Clicked Twitter Icon");
   createEvent("sidebar-github", "Clicked Github Icon");
   createEvent("sidebar-skype", "Clicked Skype Icon");
-  createEvent("sidebar-rss", "Clicked RSS Icon");
 
   // Navigation
   createEvent("avatar", "Clicked Face");
