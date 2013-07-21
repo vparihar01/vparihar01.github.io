@@ -1,3 +1,5 @@
 pygments: true
 permalink: '/:title'
 markdown: kramdown
+safe: true
+lsi: false
