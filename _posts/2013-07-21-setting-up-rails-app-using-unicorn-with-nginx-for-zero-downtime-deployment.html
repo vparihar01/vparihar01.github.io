@@ -1,7 +1,10 @@
 ---
 layout: post
-title: Setting up Unicorn with Nginx for Zero-Downtime deployment
+category : Setup
+tagline: ""
+tags : [UNICORN, NGINX, SERVER]
 ---
+{% include JB/setup %}
 <p>Unicorn is a traditional UNIX(which makes great use of Unix) prefork web server.No threads are used at all, this makes applications easier to debug and fix.</p>
 <h2 id="deploying">Deploying</h2>
 <p>With Unicorn one can deploy with zero downtime. From Unicorn documetation:</p>
@@ -343,3 +346,5 @@ exit 0
 <p>Start your Unicorn server from your Rails application directory, with no port specified (it will use the Unix socket from its configuration instead):</p>
 <pre><code>$ unicorn_rails -E production -D -c /var/www/rails_app/current/config/unicorn.rb
 </code></pre>
+<p>Voila here's your chocolate.</p>
+

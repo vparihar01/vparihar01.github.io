@@ -1,7 +1,10 @@
 ---
 layout: post
-title: Multiple SSH Keys settings for different github account
+category : Setup
+tagline: ""
+tags : [SSH, BASH, UNIX, GIT]
 ---
+{% include JB/setup %}
 <p>Github using SSH client connection. If it is a single-user (first), generate a key pair, the public key saved to github, each time you connect the SSH client sends the local private key (the default <em>~~/.ssh/id_rsa</em>) to the server authentication. In the case of single-user public key SSH client send the private key stored on the server connection is naturally paired. But if it is multi-user (first, second), we connected to the second account, the second to save the public key, but SSH client still send the default private key, that is, the first private key, then verify that naturally can not through. However, to achieve multiple accounts under the SSH key to switch on the client to do some configuration can be.</p>
 <h2 id="step-1-go-to-ssh-key-dir">Step 1: Go to SSH key dir</h2>
 <p>First, cd to <strong>~/ssh</strong> to use <strong>ssh-keygen -t rsa -C 'your_mail@youremail.com'</strong> to generate new SSH key
