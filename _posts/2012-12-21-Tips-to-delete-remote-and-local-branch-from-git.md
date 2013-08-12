@@ -20,13 +20,10 @@ $ git branch -r
 
 > You see a list of the remote branches .
 
-```
-origin/HEAD -> origin/master
-origin/design
-origin/develop
-origin/feature
-origin/master
-```
+* origin/design
+* origin/develop
+* origin/feature
+* origin/master
 
 #### Step 2: If you want to delete the branch name `develop` from `git(Github)`
 
@@ -46,7 +43,7 @@ $ git push origin :develop
 
 #### Step 1: First, make sure you are not on the same branch
 
-(eg. `develop`) which you are going to delete from the local repo also. Just move from that branch to another branch using
+(eg. `develop`) which you are going to delete from the local repo also. Just move from that branch to another branch using.
 
 ```
 $ git checkout branch_name
