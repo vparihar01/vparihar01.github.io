@@ -8,9 +8,9 @@ tags : [GITHUB, GIT]
 Tips to delete, remote and local branch from ***GIT*** e.g ***github***, ***bucket***
 
 Deleting a remote as well as a local branch from git is pretty simple.
-## To delete a remote branch -:
+### To delete a remote branch -:
 
-### Step 1: Just go into your project directory from console/gitbash(if you are using windows)
+#### Step 1: Just go into your project directory from console/gitbash(if you are using windows)
 
 In console enter-:
 ```
@@ -26,7 +26,7 @@ origin/feature
 origin/master
 ```
 
-### Step 2: If you want to delete the branch name `develop` from `git(Github)`
+#### Step 2: If you want to delete the branch name `develop` from `git(Github)`
 
 Then enter in the console-:
 ```
@@ -38,16 +38,16 @@ $ git push origin :develop
 
 
 
-## To delete a local branch -:
+### To delete a local branch -:
 
 
 
-### Step 1: First, make sure you are not on the same branch (eg. `develop`) which you are going to delete from the local repo also. Just move from that branch to another branch using
+#### Step 1: First, make sure you are not on the same branch (eg. `develop`) which you are going to delete from the local repo also. Just move from that branch to another branch using
 ```
 $ git checkout branch_name
 ```
 
-### Step 2: Then enter in the console:
+#### Step 2: Then enter in the console:
 ```
 $ git branch -d develop
 ```
