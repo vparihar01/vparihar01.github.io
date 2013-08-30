@@ -1,5 +1,7 @@
 <div class="page-header">
     <h1>{{ page.title }} {% if page.tagline %}<small>{{page.tagline}}</small>{% endif %}</h1>
+    <a href="https://twitter.com/share" class="twitter-share-button" data-via="vparihar" data-hashtags="Ruby">Tweet</a>
+    <a href="https://twitter.com/vparihar" class="twitter-follow-button" data-show-count="false">Follow @vparihar</a>
 </div>
 {% include JB/sharing %}
 <div class="row-fluid post-full">
@@ -42,6 +44,9 @@
                 <li class="next disabled"><a>Next &rarr;</a>
                     {% endif %}
             </ul>
+        </div>
+        <div class="post-sharing">
+            {% include JB/sharing %}
         </div>
         <hr>
         {% include JB/comments %}

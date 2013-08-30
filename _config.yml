@@ -116,16 +116,21 @@ JB :
   # Set 'provider' to false to turn sharing off globally.
   #
   sharing :
-     provider : tweet, linkedin, plusone
-     twitter :
-       size : small
-       via : vivek
-       count : right
-     linkedin :
-       counter : right
-     googleplus :
-       size : small
+   provider : all
+   twitter :
+     size : small
+     via : vivek
+     count :
+   facebook :
+       appid : 123
+       layout : button_count
+       faces : false
+       width : 90
+   googleplus :
+       size : medium
        annotation : bubble
+   linkedin :
+       counter : right
     
   # Settings for all other include helpers can be defined by creating 
   # a hash with key named for the given helper. ex:
