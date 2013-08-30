@@ -116,7 +116,7 @@ JB :
   # Set 'provider' to false to turn sharing off globally.
   #
   sharing :
-   provider : all
+   provider : false
    twitter :
      size : small
      via : vivek
