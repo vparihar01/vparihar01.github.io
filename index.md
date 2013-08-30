@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Rubyiest love for Rails and Javascript!
+title: Rubyist love for Rails and Javascript!
 tagline: Share and Care ;)
 ---
 
