@@ -1,0 +1,254 @@
+---
+layout: post
+category : Setup
+tagline: ""
+tags : [SSH, BASH, UNIX, GIT]
+---
+{% include JB/setup %}
+<div id="preview_div" xmlns="http://www.w3.org/1999/html"><p>In this blog post I am trying to cover all the basic server related commands that are used by sys-admins on a daily basis.
+    These might be very helpful for developers to get their hands on these commands. It would give devs a more in depth undertanding of the application memory and resource usage.
+    I have tried to cover-:
+    <em> Checking Running Services on Linux
+    </em> Checking and Understanding System Load on Linux
+    * Checking Listening Ports</p>
+</br>
+<h2 id="1-service">1. Service</h2>
+<p>To check if services/programme is running -:
+    To check if services is running we use command service for that particular job</p>
+<h3 id="a-service-names">A. Service names</h3>
+<p>The service command references are stored in the /etc/init.d directory.</p>
+<p>Distribution - apache is <em>apache2</em> on Ubuntu.</p>
+<h3 id="b-service-status">B. Service status</h3>
+<p>The following example shows how to check the status of apache on Ubuntu using the service command.</p>
+<ul>
+    <li>Using service command </li>
+</ul>
+<pre><code>~$ sudo service apache2 status
+    Apache2 is running (pid 2855).
+</code></pre>
+
+<ul>
+    <li>Using init.d scripts which are located in /etc/init.d folder</li>
+</ul>
+<pre><code>~$ /etc/init.d/apache2 status
+    Apache2 is running (pid 2855).
+</code></pre>
+
+<h3 id="c-service-command-list-all-running-services-on-ubuntu">C. Service command - list all running services on Ubuntu</h3>
+<pre><code>~$ service --status-all
+    [ ? ]  acpid
+    [ + ]  apache2
+    [ - ]  fail2ban
+    [ ? ]  fms
+    [ + ]  mongodb
+    [ ? ]  mysql
+    [ - ]  postfix
+    [ - ]  rsync
+    [ ? ]  rsyslog
+    [ ? ]  ssh
+    [ ? ]  sudo
+    [ ? ]  ufw
+</code></pre>
+
+<h3 id="d-service-controllstartstop">D. Service Controll(start/stop)</h3>
+<p>To start the service -:</p>
+<pre><code>~$ sudo service apache2 start
+    Starting apache2:                                            [  OK  ]
+</code></pre>
+
+<p>If the application cannot be started the service command will report the failure and usually show a message explaining the reason.</p>
+<pre><code>~$ sudo service apache2 start
+    Starting httpd: (98)Address already in use: make_sock: could not bind to address [::]:80
+    (98)Address already in use: make_sock: could not bind to address 0.0.0.0:80
+    no listening sockets available, shutting down
+    Unable to open logs
+    [FAILED]
+</code></pre>
+</br>
+<h2 id="2-netstat">2. <em>netstat</em></h2>
+<p>The netstat command shows the services listening to ports on a Linux server along with the details of any connections currently made to them. The connection details we look at during basic network daemon troubleshooting are the addresses the daemon is listening on (including the port number), the daemon's PID (process identifier), and the program name.</p>
+<h3 id="a-list-service-and-their-open-ports">A. List service and their open ports</h3>
+<pre><code>~$ netstat -tulpn
+    Active Internet connections (only servers)
+    Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+    tcp        0      0 127.0.0.1:58789         0.0.0.0:*               LISTEN      10371/current
+    tcp        0      0 127.0.0.1:50149         0.0.0.0:*               LISTEN      9039/current
+    tcp        0      0 127.0.0.1:11110         0.0.0.0:*               LISTEN      29248/fmsadmin
+    tcp        0      0 0.0.0.0:8134            0.0.0.0:*               LISTEN      29086/httpd
+</code></pre>
+</br>
+<h2 id="3-ps-commands-show-running-processes-in-ubuntu">3. <em>ps</em> commands Show Running Processes in Ubuntu</h2>
+<p>It provides information about the currently running processes, including their process identification numbers (PIDs). </p>
+<h3 id="a-to-display-all-running-processes">A. To display all running processes:</h3>
+<pre><code>~$ ps aux
+
+    USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+    mysql     5801  0.0  1.1 1366504 48444 ?       Ssl  Aug05  12:27 /usr/sbin/mysql
+    root     10232  0.0  0.3 315796 13012 ?        Ss   Sep03   0:01 /usr/sbin/apach
+    www-data 10247  0.0  0.9 346356 40620 ?        S    Sep03   0:00 /usr/sbin/apach
+</code></pre>
+
+<p>where,</p>
+<blockquote>
+    <ul>
+        <li>-A: select all processes</li>
+        <li>a: select all processes on a terminal, including those of other users</li>
+        <li>x: select processes without controlling ttys</li>
+    </ul>
+</blockquote>
+<h3 id="b-to-display-all-apache-2-processes">B. To display all apache 2 processes:</h3>
+<pre><code>~$ ps aux | grep apache2
+    root     10232  0.0  0.3 315796 13012 ?        Ss   Sep03   0:01 /usr/sbin/apache2 -k start
+    www-data 10247  0.0  0.9 346356 40620 ?        S    Sep03   0:00 /usr/sbin/apache2 -k start
+    www-data 19768  0.0  0.2 317048 10016 ?        S    02:35   0:00 /usr/sbin/apache2 -k start
+    www-data 19770  0.0  1.4 585788 59992 ?        S    02:35   0:00 /usr/sbin/apache2 -k start
+    www-data 19812  0.0  0.1 315964  7676 ?        S    02:36   0:00 /usr/sbin/apache2 -k start
+    www-data 20100  0.0  0.1 315964  7676 ?        S    03:02   0:00 /usr/sbin/apache2 -k start
+    root     20356  0.0  0.0   6460   820 pts/2    S+   03:20   0:00 grep --color=auto apache2
+</code></pre>
+
+<h3 id="c-to-see-all-the-processes-on-system-with-their-pids">C. To see all the processes on system with their pids</h3>
+<pre><code>~$ ps -e
+    PID TTY          TIME CMD
+    1 ?        00:00:29 init
+    2 ?        00:00:00 kthreadd/104
+    3 ?        00:00:00 khelper/104
+    68 ?        00:00:00 upstart-udev-br
+    78 ?        00:00:00 udevd
+    99 ?        00:00:00 dbus-daemon
+    119 ?        00:00:00 udevd
+    121 ?        00:00:00 udevd
+    191 ?        00:00:05 cron
+    200 ?        00:00:00 upstart-socket-
+    242 ?        00:00:20 syslogd
+    374 ?        00:00:00 saslauthd
+    375 ?        00:00:00 saslauthd
+    536 ?        00:00:00 xinetd
+    561 ?        00:01:31 sendmail-mta
+    5801 ?        00:12:27 mysqld
+    10232 ?        00:00:01 apache2
+    10247 ?        00:00:00 apache2
+    18760 ?        03:28:46 mongod
+    19768 ?        00:00:00 apache2
+    19770 ?        00:00:00 apache2
+    19812 ?        00:00:00 apache2
+    20100 ?        00:00:00 apache2
+    20176 ?        00:00:00 sshd
+    20198 ?        00:00:00 sshd
+</code></pre>
+
+<h3 id="d-to-view-the-processes-running-by-a-particular-user-for-eg-vivek">D. To view the processes running by a particular user for e.g vivek</h3>
+<pre><code>~$ ps -u vivek
+    PID TTY          TIME CMD
+    20198 ?        00:00:00 sshd
+    20199 pts/2    00:00:00 sh
+</code></pre>
+
+<h3 id="e-to-see-dynamic-real-time-view-of-a-running-system">E. To see dynamic real-time view of a running system</h3>
+<pre><code>~$ top
+    top - 03:25:52 up 29 days, 18:15,  2 users,  load average: 0.02, 0.01, 0.00
+    Tasks:  35 total,   1 running,  34 sleeping,   0 stopped,   0 zombie
+    Cpu(s):  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+    Mem:   4194304k total,   694824k used,  3499480k free,        0k buffers
+    Swap:  4194304k total,    47984k used,  4146320k free,   555992k cached
+
+    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+    5801 mysql     20   0 1334m  47m 4408 S    0  1.2  12:27.46 mysqld
+    18760 mongodb   20   0  639m 1708 1348 S    0  0.0 208:47.00 mongod
+    121 root      20   0 21524  448  284 S    0  0.0   0:00.00 udevd
+    191 root      20   0 19068  832  752 S    0  0.0   0:05.36 cron
+    20176 root      20   0  127m 4984 3848 S    0  0.1   0:00.03 sshd
+    20198 vivek     20   0  127m 1992  840 S    0  0.0   0:00.01 sshd
+    20199 vivek     20   0  4356  712  596 S    0  0.0   0:00.00 sh
+    20300 root      20   0  127m 4996 3860 S    0  0.1   0:00.03 sshd
+    20323 nishant   20   0  127m 1952  824 S    0  0.0   0:00.06 sshd
+    20324 nishant   20   0  9800 1888 1440 S    0  0.0   0:00.02 bash
+    20431 www-data  20   0  308m 7804  884 S    0  0.2   0:00.00 apache2
+    20443 root      20   0  8944 1188  956 R    0  0.0   0:00.00 top
+    20444 nslcd     20   0  449m 2092 1068 S    0  0.0   0:03.71 nslcd
+    20549 root      20   0 1140m 1644 1012 S    0  0.0   0:26.11 nscd
+    20792 root      20   0  195m 8084 2072 S    0  0.2   8:18.36 fail2ban-server
+    20794 root      20   0 22484 1396 1072 S    0  0.0   0:13.57 gam_server
+    22233 root      20   0 50436 2892 2304 S    0  0.1   0:00.29 sshd
+    24603 root      20   0  7220 1052  544 S    0  0.0   0:19.43 dhclient
+</code></pre>
+
+<p>NOTE:
+    <em> To quit press </em>q<em>
+    </em> In order to sort by a memory usage hit shift + m and the screen will show highest descending memory usage
+    <em> For help press </em>h*</p>
+</br>
+<h2 id="4-get-cpu-system-load-average-on-ubuntu">4. Get CPU / System Load Average on Ubuntu</h2>
+<p>What we might need to know is the overall system load on a server.
+    There are a couple of ways to get this information, which may or may not be enabled on your system. It’s useful to know more than one way to get the uptime information in case the commands are disabled on your shared hosting server.</p>
+<h3 id="a-uptime">A. uptime</h3>
+<p>This command gives information on system load averages for the past 1, 5, and 15 minutes:</p>
+<pre><code>~$ uptime
+    03:32:28 up 29 days, 18:21,  2 users,  load average: 0.07, 0.05, 0.02
+</code></pre>
+
+<p>Higher numbers <em>load average: 0.07, 0.05, 0.02</em> represent a problem or an overloaded machine. But, what's the the threshold? What constitutes "good" and "bad" load average values? When should you be concerned over a load average value, and when should you scramble to fix it ASAP?</p>
+<h4 id="the-traffic-analogy">The traffic analogy</h4>
+<p>A single-core CPU is like a single lane of traffic with one toll. Imagine you are a toll operator ... sometimes your toll is so busy there are cars lined up to cross. So the question is what are the metrics which tells how much busy or crowded toll is ? Its simple how many cars are in waiting at particular interval of time to cross the toll. If their is huge backlog of cars then it means traffic is high and causing congestions.</p>
+<p>So in our context we use different numbering system to understand the traffic congestion on particular toll like :</p>
+<ul>
+    <li><em>0.00 means there's no traffic on the bridge at all</em>. In fact, between 0.00 and 1.00 means there's no backup, and an arriving car will just go right on.</li>
+    <li><em>1.00 means the bridge is exactly at capacity</em>. All is still good, but if traffic gets a little heavier, things are going to slow down.</li>
+    <li><em>over 1.00 means there's backlog</em>. How much? Well, 2.00 means that there are two lanes worth of cars total -- one lane's worth on the toll, and one lane's worth waiting. 3.00 means there are three lane's worth total -- one lane's worth on the toll, and two lanes' worth waiting. Etc.</li>
+</ul>
+<h4 id="so-from-above-explanaiton-the-ideal-load-is-100">So from above explanaiton the ideal load is 1.00?</h4>
+<p>Well, not exactly.</p>
+<ul>
+    <li>
+        <p>The <em>Need to Look into it</em> Rule of Thumb: "0.70" If your load average is staying above &gt; 0.70, it's time to investigate before things get worse.</p>
+    </li>
+    <li>
+        <p>The <em>Fix this now</em> Rule of Thumb: <em>1.00</em>. If your load average stays above 1.00, find the problem and fix it now. Otherwise, you're going to get woken up in the middle of the night, and it's not going to be fun.</p>
+    </li>
+    <li>
+        <p>The <em>Arrgh, it's 3AM WTF?</em> Rule of Thumb: 5.0. If your load average is above 5.00, you could be in serious trouble, your box is either hanging or slowing way down, and this will (inexplicably) happen in the worst possible time like in the middle of the night or when you're presenting at a conference. Don't let it get there.</p>
+    </li>
+</ul>
+<h4 id="now-the-good-question-is-what-about-multi-processors">Now the good question is what about Multi-processors?</h4>
+<p>On multi-processor system, the load is relative to the number of processor cores available. The "100% utilization" mark is 1.00 on a single-core system, 2.00, on a dual-core, 4.00 on a quad-core, etc. This lead us to a 2 new Rules of Thumb:</p>
+<ul>
+    <li>
+        <p>The <em>number of cores = max load</em> Rule of Thumb: on a multicore system, your load should not exceed the number of cores available.</p>
+    </li>
+    <li>
+        <p>The <em>cores is cores</em> Rule of Thumb: How the cores are spread out over CPUs doesn't matter. Two quad-cores == four dual-cores == eight single-cores. It's all eight cores for these purposes.</p>
+    </li>
+</ul>
+<p>So # of cores is important to interpreting load averages ... how do we know how many cores present in our system?</p>
+<h3 id="b-to-get-info-on-each-processor-in-your-system">B. To get info on each processor in your system.</h3>
+<pre><code>~$ cat /proc/cpuinfo
+    processor : 0
+    vendor_id    : GenuineIntel
+    cpu family  : 6
+    model       : 44
+    model name  : Intel(R) Xeon(R) CPU           E5645  @ 2.40GHz
+    stepping    : 2
+    microcode   : 0x10
+    cpu MHz     : 1999.975
+    cache size  : 12288 KB
+    physical id : 0
+    siblings    : 1
+    core id     : 0
+    cpu cores   : 1
+    apicid      : 0
+    initial apicid  : 52
+    fpu     : yes
+    fpu_exception   : yes
+    cpuid level : 11
+    wp      : yes
+    flags       : fpu de tsc msr pae cx8 sep cmov pat clflush mmx fxsr sse sse2 ss ht syscall nx lm constant_tsc up rep_good nopl nonstop_tsc pni pclmulqdq ssse3 cx16 pcid sse4_1 sse4_2 popcnt aes hypervisor lahf_lm
+    bogomips    : 3999.95
+    clflush size    : 64
+    cache_alignment : 64
+    address sizes   : 40 bits physical, 48 bits virtual
+</code></pre>
+
+<h3 id="c-to-get-just-a-count-do-grep-and-word-count">C. To get just a count do grep and word count:.</h3>
+<pre><code>~$ grep 'model name' /proc/cpuinfo | wc -l
+    1 =&gt; Number of cpu is one
+</code></pre></div>
