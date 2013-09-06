@@ -7,10 +7,21 @@ tagline: Share and Care ;)
 
 {% include JB/setup %}
 
-<ul class="posts">
+<table class="table table-hover">
+ <thead>
+    <tr>
+      <th>Title</th>
+      <th>Posted On</th>
+    </tr>
+  </thead>
   {% for post in site.posts %}
-    <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ BASE_PATH }}{{ post.url }}">{{ post.title }}</a></li>
+     <tbody>
+        <tr>
+          <td><a class="span8" href="{{ BASE_PATH }}{{ post.url }}">{{ post.title }}</a></td>
+          <td>{{ post.date | date_to_string }}</td>
+        </tr>
+      </tbody>
   {% endfor %}
-</ul>
+</table>
 
 
