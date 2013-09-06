@@ -3,6 +3,7 @@ layout: post
 category : Talks
 tagline: ""
 tags : [Ruby]
+title : "How To Become Better Rubyist?"
 ---
 {% include JB/setup %}
 
