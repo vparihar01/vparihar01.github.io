@@ -7,7 +7,7 @@ tagline: Share and Care ;)
 
 {% include JB/setup %}
 
-<table class="table table-hover">
+<table class="table table-hover table-bordered">
  <thead>
     <tr>
       <th>Title</th>
