@@ -2,7 +2,7 @@
 layout: post
 category : Talks
 tagline: ""
-tags : [MongoDb]
+tags : [MONGODB, NOSQL, PRESENTATION]
 title : "MongoDb scalability and high availability with Replica-Set"
 ---
 {% include JB/setup %}
@@ -78,10 +78,10 @@ One of the much awaited features in *MongoDB 1.6* is replica sets, MongoDB repli
 * Advantaged of *Replica Set* vs *Master/Slave* 
 * How to set up replica set on Production Demo 
 
-Below is the **presentation** on **MongoDb** scalability and high availability with Replica-Set which is covered in this meetup by me, it is short and covered a lot of enlightened point which is really helpful for the people who are novice in MongoBb.
+Below is the **presentation** on **MongoDb** scalability and high availability with Replica-Set which is covered in MongoDB meetup by me, it is short and covered a lot of enlightened point which is really helpful for the people who are novice in MongoBb.
 {% slideshare 27617066 %}
 
-##### Below is the session recorded video:
+##### Below is  recorded session video:
 {% youtube PSdru23y4hk 500 400 %}
 
 During the session I tried to explain:”**Setting up replica set on production environment**” through a video demo. Explanation gathered 3 instances which already have Mongo installed.  
