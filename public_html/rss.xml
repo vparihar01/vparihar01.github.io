@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+<channel>
+        <title>Rubyiest, Programmer, DevOps</title>
+        <description>Rubyiest, Programmer, DevOps - Vivek Parihar</description>
+        <link>http://vparihar01.github.io</link>
+        <link>http://vparihar01.github.io</link>
+        <lastBuildDate>2013-08-11T01:55:10+05:30</lastBuildDate>
+        <pubDate>2013-08-11T01:55:10+05:30</pubDate>
+        <ttl>1800</ttl>
+
+
+        <item>
+                <title>Setting Up Rails App Using Unicorn With Nginx For Zero Downtime Deployment</title>
+                <description>
+&lt;p&gt;Unicorn is a traditional UNIX(which makes great use of Unix) prefork web server.No threads are used at all, this makes applications easier to debug and fix.&lt;/p&gt;
+&lt;h2 id=&quot;deploying&quot;&gt;Deploying&lt;/h2&gt;
+&lt;p&gt;With Unicorn one can deploy with zero downtime. From Unicorn documetation:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;You can upgrade Unicorn, your entire application, libraries and even your Ruby interpreter without dropping clients.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;rails-on-unicorns&quot;&gt;Rails on Unicorns&lt;/h2&gt;
+&lt;p&gt;Now we start setting up rails using ngnix with unicorn.&lt;/p&gt;
+&lt;h3 id=&quot;installing-nginx&quot;&gt;Installing Nginx&lt;/h3&gt;
+&lt;p&gt;To install Nginx web server on our ubuntu server:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ sudo apt-get install nginx
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;We could start the server with the nginx command but the installer also installs an init.d file that we can use to manage our nginx server as well.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;pre&gt;&lt;code&gt;$ /etc/init.d/nginx -h
+Usage: nginx {start|stop|restart|reload|force-reload|status|configtest}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We can run this&lt;code&gt;init.d&lt;/code&gt; command directly or we can interact with it through the service command and we'll use this to start it up.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ sudo service nginx start
+Starting nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+configuration file /etc/nginx/nginx.conf test is successful nginx.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;configuring-nginx-to-run-on-a-port-80&quot;&gt;Configuring nginx to run on a port =&amp;gt; 80&lt;/h3&gt;
+&lt;p&gt;All main configuration file reside at &lt;code&gt;/etc/nginx/nginx.conf&lt;/code&gt; and by default it looks like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ cat /etc/nginx/nginx.conf
+user nobody nogroup; # for systems with a &amp;quot;nogroup&amp;quot;
+worker_processes  1;
+
+error_log  /var/log/nginx/error.log;
+pid        /var/run/nginx.pid;
+
+events {
+    worker_connections  1024;
+    # multi_accept on;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+
+    access_log        /var/log/nginx/access.log;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+    tcp_nodelay        on;
+
+    gzip  on;
+    gzip_disable &amp;quot;MSIE [1-6]\.(?!.*SV1)&amp;quot;;
+
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In &lt;code&gt;nginx.conf&lt;/code&gt; you may have stumbled upon this line:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;user nobody nogroup; # for systems with a &quot;nogroup&quot;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Its generally adviced to run as a seperate user for security reasons and increased control. Weâ€™ll create an nginx user and a web group.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ sudo useradd -s /sbin/nologin -r deploy
+$ sudo usermod -a -G deploy deploy
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Configure your static path in &lt;code&gt;nginx.conf&lt;/code&gt; to &lt;code&gt;/var/www&lt;/code&gt;, and change the owner of that directory to the web group:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ sudo mkdir /var/www
+$ sudo chgrp -R deploy /var/www # set /var/www owner group to &amp;quot;deploy&amp;quot;
+$ sudo chmod -R 775 /var/www # group write permission
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;To avoid permission issues we're going to make Nginx run as a deployer, the user that's going to deploy the application code, this way we can rest safely that no â€œpermission deniedâ€ on files will ever happen (at least as long as we donâ€™t deploy as another user).&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Now change this default &lt;code&gt;nginx.conf&lt;/code&gt; file like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;user  deploy deploy; 
+worker_processes  1;
+worker_priority  -5;
+timer_resolution  100ms;
+
+error_log  /var/log/nginx/error.log;
+
+# To enable to open as many files as possible within a single nginx worker process without crashing increase default 1024 value to some higher value
+worker_rlimit_nofile 30240;
+
+events {
+    use  epoll;
+    worker_connections  10240;
+}
+
+http {
+    client_header_buffer_size 1460;
+    client_body_timeout  1460;
+    client_max_body_size      25m;
+    client_body_buffer_size   128k;
+    client_body_temp_path     /tmp/client_body_temp;
+    large_client_header_buffers 8 8m; 
+
+    include                   mime.types;
+    default_type              application/octet-stream;
+    keepalive_timeout         1300;
+
+    gzip                      on;
+    gzip_http_version         1.1;
+    gzip_disable              &amp;quot;msie6&amp;quot;;
+    gzip_vary                 on;
+    gzip_min_length           500; #Compress everything no matter the size
+    gzip_buffers              64 8k;
+    gzip_comp_level           3;
+    gzip_proxied              any;
+    gzip_types                text/plain text/css application/x-javascript text/xml application/xml;
+
+    proxy_connect_timeout  300;
+    proxy_send_timeout  300;
+    proxy_read_timeout  300;
+    proxy_buffering on;
+    proxy_buffers 8 16k;
+    proxy_buffer_size 32k;
+
+    # For better performance we use Linux sendfile():
+    sendfile       on;
+
+    # To send all response headers in one packet. This allows a client to start rendering content immediately after the first packet arrives:
+    tcp_nopush     on;
+    tcp_nodelay    off;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] &amp;quot;$request&amp;quot; '
+                      '$status $body_bytes_sent &amp;quot;$http_referer&amp;quot; '
+                      '&amp;quot;$http_user_agent&amp;quot; &amp;quot;$http_x_forwarded_for&amp;quot;';
+
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;To run a single application in this server, we can go on and edit the &lt;code&gt;/etc/nginx/sites-available/default&lt;/code&gt; file directly, if you are going to host more than one application in this server you should create separate files for each of them and then symlink them to the &lt;code&gt;/etc/nginx/sites-enabled/&lt;/code&gt; folder.&lt;/p&gt;
+&lt;p&gt;Add a new file &lt;code&gt;unicorn_rails_app.conf&lt;/code&gt; in the site-available directory and copy and paste the following into it:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;upstream unicorn_rails_app {
+    # fail_timeout=0 means we always retry an upstream even if it failed
+    # to return a good HTTP response (in case the Unicorn master nukes a
+    # single worker for timing out).
+
+    # for UNIX domain socket setups:
+  server unix:/var/www/rails_app/current/tmp/unicorn.rails_app.sock fail_timeout=0;
+}
+
+server {
+  # if you're running multiple servers, instead of &amp;quot;default&amp;quot; you should
+  # put your main domain name here
+  listen 80 default;
+
+  # you could put a list of other domain names this application answers
+  server_name your.domain_name.com;
+
+  # path for static files
+  root /var/www/rails_app/current/public;
+  access_log /var/log/nginx/rails_app_access.log;
+
+  location / {
+    proxy_pass http://unicorn_rails_app;            
+    proxy_redirect     off;
+
+    proxy_set_header   Host             $host:$proxy_port;
+    proxy_set_header   X-Real-IP        $remote_addr;
+    client_max_body_size 4m;
+  #  proxy_ignore_client_abort on;
+  }
+  # if the request is for a static resource, nginx should serve it directly
+  # and add a far future expires header to it, making the browser
+  # cache the resource and navigate faster over the website
+  location ~ ^/(images|javascripts|stylesheets|system)/  {
+     root /var/www/rails_app/current/public;
+     add_header Last-Modified &amp;quot;&amp;quot;;
+     add_header ETag &amp;quot;&amp;quot;;
+     expires max;
+     break;
+  }
+  # Rails error pages
+  error_page 500 502 503 504 /500.html;
+  location = /500.html {
+    root /path/to/app/current/public;
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;After creating this new file &lt;code&gt;unicorn_rails_app.conf&lt;/code&gt;, we need to symlink it to the sites-enabled directory:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ sudo ln -s /etc/nginx/sites-available/unicorn_rails_app.conf /etc/nginx/sites-enabled/unicorn_rails_app.conf
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;unicorn-setup&quot;&gt;Unicorn setup&lt;/h3&gt;
+&lt;p&gt;Now we have nginx running. Install the Unicorn gem:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ gem install unicorn
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Add the unicorn gem to your Rails application's Gemfile&lt;/p&gt;
+&lt;h4 id=&quot;gemfile&quot;&gt;Gemfile&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;source 'https://rubygems.org'&lt;/p&gt;
+&lt;p&gt;gem 'rails', '3.2.12'&lt;/p&gt;
+&lt;p&gt;gem 'unicorn'&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&quot;create-the-unicorn-configuration-file-in-your-rails-application-configunicornrb-copy-the-below-lines&quot;&gt;Create the Unicorn configuration file in your Rails application &lt;code&gt;config/unicorn.rb&lt;/code&gt; (copy the below lines):&lt;/h4&gt;
+&lt;pre&gt;&lt;code&gt;$ vim config/unicorn.rb
+
+# Unicorn configuration file to be running by unicorn_init.sh with capistrano task
+# read an example configuration before: http://unicorn.bogomips.org/examples/unicorn.conf.rb
+# 
+# working_directory, pid, paths - internal Unicorn variables must to setup
+# worker_process 4              - is good enough for serve small production application
+# timeout 30                    - time limit when unresponded workers to restart
+# preload_app true              - the most interesting option that confuse a lot of us,
+#                                 just setup is as true always, it means extra work on 
+#                                 deployment scripts to make it correctly
+# BUNDLE_GEMFILE                - make Gemfile accessible with new master
+# before_fork, after_fork       - reconnect to all dependent services: DB, Redis, Sphinx etc.
+#                                 deal with old_pid only if CPU or RAM are limited enough
+#
+# config/server/production/unicorn.rb
+
+app_path          = &amp;quot;/var/www/rails_app/current&amp;quot;
+
+working_directory &amp;quot;#{app_path}&amp;quot;
+pid               &amp;quot;#{app_path}/tmp/pids/unicorn.pid&amp;quot;
+stderr_path       &amp;quot;#{app_path}/log/unicorn.log&amp;quot;
+stdout_path       &amp;quot;#{app_path}/log/unicorn.log&amp;quot;
+
+listen            &amp;quot;#{app_path}/tmp/unicorn.rails_app.sock&amp;quot; , :backlog =&amp;gt; 64
+
+user 'deploy','deploy'
+#listen 80, :tcp_nopush =&amp;gt; true 
+#listen 8080, :tcp_nopush =&amp;gt; true
+worker_processes  4
+timeout           600
+preload_app       true
+GC.respond_to?(:copy_on_write_friendly=) and
+  GC.copy_on_write_friendly = true
+before_fork do |server, worker|
+  # the following is highly recomended for Rails + &amp;quot;preload_app true&amp;quot;
+  # as there's no need for the master process to hold a connection
+  defined?(ActiveRecord::Base) and
+    ActiveRecord::Base.connection.disconnect!
+end
+
+after_fork do |server, worker|
+  # per-process listener ports for debugging/admin/migrations
+  # addr = &amp;quot;127.0.0.1:#{9293 + worker.nr}&amp;quot;
+  # server.listen(addr, :tries =&amp;gt; -1, :delay =&amp;gt; 5, :tcp_nopush =&amp;gt; true)
+
+  # the following is *required* for Rails + &amp;quot;preload_app true&amp;quot;,
+  defined?(ActiveRecord::Base) and
+    ActiveRecord::Base.establish_connection
+
+  # if preload_app is true, then you may also want to check and
+  # restart any other shared sockets/descriptors such as Memcached,
+  # and Redis.  TokyoCabinet file handles are safe to reuse
+  # between any number of forked children (assuming your kernel
+  # correctly implements pread()/pwrite() system calls)
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Then Unicorn is configured!&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&quot;create-a-unicorn-initializer-shell-script-in-the-varwwwrails_appcurrentconfig-directory-to-startstoprestart-unicorn-processes&quot;&gt;Create a Unicorn initializer shell script in the &lt;code&gt;/var/www/rails_app/current/config&lt;/code&gt; directory to start|stop|restart unicorn processes:&lt;/h4&gt;
+&lt;pre&gt;&lt;code&gt;$ touch /var/www/rails_app/current/config/unicorn
+
+$ vim /var/www/rails_app/current/config/unicorn
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&quot;paste-the-following-into-that-new-file&quot;&gt;Paste the following into that new file:&lt;/h4&gt;
+&lt;pre&gt;&lt;code&gt;#! /bin/bash
+
+### BEGIN INIT INFO
+# Provides:          unicorn
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts the unicorn web server
+# Description:       starts unicorn
+### END INIT INFO
+
+APP_ROOT=&amp;quot;/var/www/rails_app&amp;quot;
+USER=&amp;quot;deploy&amp;quot;
+DAEMON=unicorn_rails
+DAEMON_OPTS=&amp;quot;-c $APP_ROOT/shared/config/unicorn.rb -E staging -D&amp;quot;
+NAME=unicorn
+DESC=&amp;quot;Unicorn app for $USER&amp;quot;
+PID=$APP_ROOT/shared/pids/unicorn.pid
+
+case &amp;quot;$1&amp;quot; in
+  start)
+        CD_TO_APP_DIR=&amp;quot;cd $APP_ROOT&amp;quot;
+        START_DAEMON_PROCESS=&amp;quot;bundle exec $DAEMON $DAEMON_OPTS&amp;quot;
+
+        echo -n &amp;quot;Starting $DESC: &amp;quot;
+        if [ `whoami` = root ]; then
+          su - $USER -c &amp;quot;$CD_TO_APP_DIR &amp;gt; /dev/null 2&amp;gt;&amp;amp;1 &amp;amp;&amp;amp; $START_DAEMON_PROCESS&amp;quot;
+        else
+          $CD_TO_APP_DIR &amp;gt; /dev/null 2&amp;gt;&amp;amp;1 &amp;amp;&amp;amp; $START_DAEMON_PROCESS
+        fi
+        echo &amp;quot;$NAME.&amp;quot;
+        ;;
+  stop)
+        echo -n &amp;quot;Stopping $DESC: &amp;quot;
+        kill -QUIT `cat $PID`
+        echo &amp;quot;$NAME.&amp;quot;
+        ;;
+  restart)
+        echo -n &amp;quot;Restarting $DESC: &amp;quot;
+        kill -USR2 `cat $PID`
+        echo &amp;quot;$NAME.&amp;quot;
+        ;;
+  reload)
+        echo -n &amp;quot;Reloading $DESC configuration: &amp;quot;
+        kill -HUP `cat $PID`
+        echo &amp;quot;$NAME.&amp;quot;
+        ;;
+  *)
+        echo &amp;quot;Usage: $NAME {start|stop|restart|reload}&amp;quot; &amp;gt;&amp;amp;2
+        exit 1
+        ;;
+esac
+
+exit 0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&quot;start-nginx-server&quot;&gt;Start nginx server&lt;/h4&gt;
+&lt;p&gt;Start your nginx server from its installation directory:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ /etc/init.d/nginx restart
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&quot;start-unicorn-server&quot;&gt;Start Unicorn server&lt;/h4&gt;
+&lt;p&gt;Start your Unicorn server from your Rails application directory, with no port specified (it will use the Unix socket from its configuration instead):&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ unicorn_rails -E production -D -c /var/www/rails_app/current/config/unicorn.rb
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Voila here's your chocolate.&lt;/p&gt;
+
+</description>
+                <link>http://vparihar01.github.io/setup/2013/07/21/setting-up-rails-app-using-unicorn-with-nginx-for-zero-downtime-deployment</link>
+                <guid>http://vparihar01.github.io/setup/2013/07/21/setting-up-rails-app-using-unicorn-with-nginx-for-zero-downtime-deployment</guid>
+                <pubDate>2013-07-21T00:00:00+05:30</pubDate>
+        </item>
+
+        <item>
+                <title>Humongous Db Back To Documents</title>
+                <description>
+
+&lt;p&gt;Below is the presentation on MongoDb basic which is given by me, it is short and covered a lot of enlightened point which is really helpful for the people who are novice in MongoBb. Here we not only discuss the importance of MongoBb, but also a different scenario where SQL and No SQL (i.e No Only SQL) is good and each one possess their own importance. Also some info about 10Gen's support for MongoBb users.&lt;/p&gt;
+&lt;!--&lt;iframe src=&quot;http://www.slideshare.net/slideshow/embed_code/24686234&quot; width=&quot;425&quot; height=&quot;355&quot; frameborder=&quot;0&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; scrolling=&quot;no&quot; allowfullscreen&gt;&lt;/iframe&gt;--&gt;
+&lt;iframe src=&quot;http://www.slideshare.net/slideshow/embed_code/24686234&quot; width=&quot;427&quot; height=&quot;356&quot; frameborder=&quot;0&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; scrolling=&quot;no&quot; style=&quot;border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px&quot; allowfullscreen webkitallowfullscreen mozallowfullscreen&gt; &lt;/iframe&gt; &lt;div style=&quot;margin-bottom:5px&quot;&gt; &lt;strong&gt; &lt;a href=&quot;http://www.slideshare.net/vivekparihar1/hu-mongous-db-v2&quot; title=&quot;Hu mongous db v2&quot; target=&quot;_blank&quot;&gt;Hu mongous db v2&lt;/a&gt; &lt;/strong&gt; from &lt;strong&gt;&lt;a href=&quot;http://www.slideshare.net/vivekparihar1&quot; target=&quot;_blank&quot;&gt;Vivek Parihar&lt;/a&gt;&lt;/strong&gt; &lt;/div&gt;</description>
+                <link>http://vparihar01.github.io/talks/2013/04/05/HuMongous-Db-Back-to-Documents</link>
+                <guid>http://vparihar01.github.io/talks/2013/04/05/HuMongous-Db-Back-to-Documents</guid>
+                <pubDate>2013-04-05T00:00:00+05:30</pubDate>
+        </item>
+
+        <item>
+                <title>Multiple Ssh Keys Settings For Different Github Account</title>
+                <description>
+&lt;p&gt;Github using SSH client connection. If it is a single-user (first), generate a key pair, the public key saved to github, each time you connect the SSH client sends the local private key (the default &lt;em&gt;~~/.ssh/id_rsa&lt;/em&gt;) to the server authentication. In the case of single-user public key SSH client send the private key stored on the server connection is naturally paired. But if it is multi-user (first, second), we connected to the second account, the second to save the public key, but SSH client still send the default private key, that is, the first private key, then verify that naturally can not through. However, to achieve multiple accounts under the SSH key to switch on the client to do some configuration can be.&lt;/p&gt;
+&lt;h2 id=&quot;step-1-go-to-ssh-key-dir&quot;&gt;Step 1: Go to SSH key dir&lt;/h2&gt;
+&lt;p&gt;First, cd to &lt;strong&gt;~/ssh&lt;/strong&gt; to use &lt;strong&gt;ssh-keygen -t rsa -C 'your_mail@youremail.com'&lt;/strong&gt; to generate new SSH key
+You are then prompted for an optional password. After the key is generate you copy &amp;amp; paste it into your GitHub account settings.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Create different public key&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;step-2-generate-a-first-ssh-key&quot;&gt;Step 2: Generate a First SSH key&lt;/h2&gt;
+&lt;p&gt;&lt;em&gt;Create first user with&lt;/em&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ ssh-keygen -t rsa -C &amp;quot;email@domain.com&amp;quot;
+# Creates a new ssh key, using the provided email as a label
+# Generating public/private rsa key pair.
+# Enter file in which to save the key (/Users/you/.ssh/id_rsa): [Press enter]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Which should give you something like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# Your identification has been saved in /Users/you/.ssh/id_rsa.
+# Your public key has been saved in /Users/you/.ssh/id_rsa.pub.
+# The key fingerprint is:
+# 01:0f:f4:3b:ca:85:d6:17:a1:7d:f0:68:9d:f0:a2:db email@domain.com
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You are then prompted for an optional password. After the key is generate you copy &amp;amp; paste it into your GitHub account settings.&lt;/p&gt;
+&lt;h2 id=&quot;step-3-generate-a-second-ssh-key&quot;&gt;Step 3: Generate a Second SSH key&lt;/h2&gt;
+&lt;p&gt;&lt;em&gt;Create second user with&lt;/em&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ ssh-keygen -t rsa -f ~/.ssh/second_rsa -C &amp;quot;email@domain.com&amp;quot;
+# Creates a new ssh key, using the provided email as a label
+# Generating public/private rsa key pair.
+# Enter file in which to save the key (/Users/you/.ssh/second_rsa): [Press enter]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Which should give you something like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# Your identification has been saved in /Users/you/.ssh/second_rsa.
+# Your public key has been saved in /Users/you/.ssh/second_rsa.pub.
+# The key fingerprint is:
+# 01:0f:f4:3b:ca:85:d6:17:a1:7d:f0:68:9d:f0:a2:db email@domain.com
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;step-4-add-saved-ssk-keys&quot;&gt;Step 4: Add Saved SSK keys&lt;/h2&gt;
+&lt;p&gt;After Step 3: two SSH keys created at &lt;strong&gt;~/.ssh&lt;/strong&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;~/.ssh/id_rsa
+~/.ssh/second_rsa
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then, add these two keys as following&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ ssh-add ~/.ssh/id_rsa
+$ ssh-add ~/.ssh/second_rsa
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can delete all cached keys before&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ ssh-add -D
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;step-5-finally-you-can-check-your-saved-keys&quot;&gt;Step 5: Finally, you can check your saved keys&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;$ ssh-add -l
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;step-6-modify-the-ssh-config&quot;&gt;Step 6: Modify the ssh config&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;$ cd ~/.ssh/
+$ touch config
+$ subl -a config
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then add below lines into &lt;strong&gt;config&lt;/strong&gt; file&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;#First account
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_rsa
+
+#Second account
+Host github.com-second
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/second_rsa
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;step-7-test-everything-out&quot;&gt;Step 7: Test everything out&lt;/h2&gt;
+&lt;p&gt;To make sure everything is working you'll now SSH to GitHub. When you do this, you will be asked to authenticate this action using your password, which for this purpose is the passphrase you created earlier. Don't change the git@github.com part. That's supposed to be there.&lt;br /&gt;
+&lt;em&gt;For first SSH key do this&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ ssh -T git@github.com
+# Attempts to ssh to github using first ssh key
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;You may see this warning&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# The authenticity of host 'github.com (207.97.227.239)' can't be established.
+# RSA key fingerprint is 16:27:ac:a5:76:28:2d:36:63:1b:56:4d:eb:df:a6:48.
+# Are you sure you want to continue connecting (yes/no)?
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Don't worry, this is supposed to happen. Verify that the fingerprint matches the one here and type &lt;strong&gt;yes&lt;/strong&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# Hi username! You've successfully authenticated, but GitHub does not
+# provide shell access.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;For Second SSH key do this&lt;/em&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ ssh -T git@github.com-second
+# Attempts to ssh to github using second ssh key
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;You may see this warning&lt;/em&gt;&lt;/strong&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# The authenticity of host 'github.com (207.97.227.239)' can't be established.
+# RSA key fingerprint is 16:27:ac:a5:76:28:2d:36:63:1b:56:4d:eb:df:a6:48.
+# Are you sure you want to continue connecting (yes/no)?
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Don't worry, this is supposed to happen. Verify that the fingerprint matches the one here and type &lt;strong&gt;yes&lt;/strong&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# Hi username! You've successfully authenticated, but GitHub does not
+# provide shell access.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;step-8-clone-your-repo-and-modify-your-git-config&quot;&gt;Step 8: Clone your repo and modify your Git config&lt;/h2&gt;
+&lt;p&gt;With this set up I can clone with my default key as Github suggests:&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Clone your repo&lt;/em&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ git clone git@github.com:username/project.git
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If I want to clone a repository from my second account I can alter the command to use the second SSH key I generated:&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Clone your repo&lt;/em&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ git clone git@github.com-second:username/project.git
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Cd project and modify git config&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ git config user.name &amp;quot;First User&amp;quot;
+$ git config user.email &amp;quot;first_email@email.com&amp;quot;
+
+$ git config user.name &amp;quot;Second User&amp;quot;
+$ git config user.email &amp;quot;second_email@mail.com&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Or you can have global git config&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ git config --global user.name &amp;quot;First User&amp;quot;
+$ git config --global user.email &amp;quot;email@email.com&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then use normal flow to push your code&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ git add .
+$ git commit -m &amp;quot;your comments&amp;quot;
+$ git push
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In fact, if I wanted to I could have a different SSH key for every account I have; GitHub, Bitbucket, or any other service that requires one.&lt;/p&gt;</description>
+                <link>http://vparihar01.github.io/setup/2013/04/03/multiple-ssh-keys-settings-for-different-github-account</link>
+                <guid>http://vparihar01.github.io/setup/2013/04/03/multiple-ssh-keys-settings-for-different-github-account</guid>
+                <pubDate>2013-04-03T00:00:00+05:30</pubDate>
+        </item>
+
+
+</channel>
+</rss>

@@ -1,0 +1,14 @@
+
+http://vparihar01.github.io/archive.html
+http://vparihar01.github.io/atom.xml
+http://vparihar01.github.io/categories.html
+http://vparihar01.github.io/index.html
+http://vparihar01.github.io/pages.html
+http://vparihar01.github.io/rss.xml
+http://vparihar01.github.io/sitemap.txt
+http://vparihar01.github.io/tags.html
+http://vparihar01.github.io/talks.html
+
+http://vparihar01.github.io/setup/2013/07/21/setting-up-rails-app-using-unicorn-with-nginx-for-zero-downtime-deployment
+http://vparihar01.github.io/talks/2013/04/05/HuMongous-Db-Back-to-Documents
+http://vparihar01.github.io/setup/2013/04/03/multiple-ssh-keys-settings-for-different-github-account

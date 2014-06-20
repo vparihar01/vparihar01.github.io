@@ -1,0 +1,413 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MongoDb scalability and high availability with Replica-Set Share and Care ;)</title>
+    
+    <meta name="author" content="Vivek Parihar">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--<link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,400,600' rel='stylesheet' type='text/css'>-->
+
+
+    <!-- Le styles -->
+    <link href="/assets/themes/twitter/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+    <script src="/assets/themes/twitter/js/jquery-1.10.1.min.js"></script>
+    <script src="/assets/themes/twitter/js/affix.js"></script>
+
+    <!-- Le fav and touch icons -->
+    <!-- Update these with your own images
+      <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+      <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+      <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+    -->
+    <link rel="shortcut icon" href="/assets/themes/twitter/bootstrap/img/favicon.png">
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+
+</head>
+
+<body>
+<div class="navbar">
+    <div class="navbar-inner">
+        <!--<div class="container-narrow">-->
+            <a class="brand" href="/">Rubyist, Hacker, DevOps</a>
+            <ul class="nav">
+                
+                
+                
+
+
+  
+    
+      
+      	
+      	<li><a href="/archive.html">Archive</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories.html">Categories</a></li>
+      	
+      
+    
+  
+    
+  
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/pages.html">Pages</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/tags.html">Tags</a></li>
+      	
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/talks.html">Talks</a></li>
+      	
+      
+    
+  
+
+
+
+            </ul>
+        <!--</div>-->
+    </div>
+</div>
+
+<div class="container-fluid">
+
+    <div class="content">
+        
+<div class="page-header">
+    <h1>MongoDb scalability and high availability with Replica-Set <small></small></h1>
+    <a href="https://twitter.com/share" class="twitter-share-button" data-via="vparihar" data-hashtags="Ruby">Tweet</a>
+    <a href="https://twitter.com/vparihar" class="twitter-follow-button" data-show-count="false">Follow @vparihar</a>
+</div>
+
+<div class="row-fluid post-full">
+    <div class="span8">
+        <div class="date">
+            <span>27 October 2013</span>
+        </div>
+        <div class="content">
+            <p><img alt='Smaller icon' src='/assets/themes/twitter/bootstrap/img/mongodb.png' /> , as one of the trendy and most discussed technology, has raised huge user base recently.</p>
+
+<p>Most of the audience prefer practicing it or using it as back-end for their production running applications.</p>
+
+<p>First thought about <em>MongoDB</em> usually tends to be another <em>No-SQL</em> database. But a better glance pushed me to explore its functionality in-depth. Easy to use and unanimous in-built functionality made it far different than other No-SQL databases.</p>
+
+<p>Although, my consent is with every aspect and versatility of <em>MongoDB</em>, yet I agree that it is not a silver bullet for all your problems. One has to be clear with the use case you want to put it in, while opting for MongoDB as a back-end.</p>
+
+<p>During the <em>MongoDB</em> Meetup, I didn’t prefer discussing “<em>What is MongoDB</em>” as that is something which has been taken care of by a lot of people rather, I attempted to elaborate the “<strong>10 reasons to love mongodb</strong>” and how comfortably we can scale it at any given point of time.</p>
+
+<h4 id='the_10_reasons'>The 10 reasons:</h4>
+
+<ol>
+<li>Relatively easy to set up</li>
+
+<li>Quite fast</li>
+
+<li>Easily scalable</li>
+
+<li>High availability</li>
+
+<li>High performance</li>
+
+<li>Flexible schema</li>
+
+<li>Built-in sharding &amp; replication</li>
+
+<li>Courses are excellent to start working as a developer/DBA.</li>
+
+<li>Deploy new instance on demand</li>
+
+<li>Base rather than ACID</li>
+</ol>
+
+<h4 id='base_rather_than_acid'>BASE rather than ACID</h4>
+
+<p>Usually large systems are based on CAP, rather than on <em>ACID</em>, they are a <em>BASE</em>!</p>
+
+<h5 id='as_base_stands_for'>As BASE stands for:</h5>
+
+<p><strong>B</strong>asically <strong>A</strong>vailable - system seems to work all the time</p>
+
+<p><strong>S</strong>oft State - it doesn&#8217;t have to be consistent all the time</p>
+
+<p><strong>E</strong>ventually Consistent - becomes consistent later</p>
+
+<p>Organizations nowadays tend to build their applications on <em>CAP &amp; BASE</em>, to name a few: <em>Google, Yahoo, Facebook, Amazon, eBay</em>.</p>
+
+<p><strong>Amazon</strong> popularized the concept of “<em>Eventual Consistency</em>”.</p>
+
+<p><em>Their definition is:</em></p>
+
+<blockquote>
+<p>The storage system guarantees that if no new updates are made to the object, eventually all accesses will return the last updated value.</p>
+</blockquote>
+
+<h4 id='my_personal_views'>My personal views:</h4>
+
+<ul>
+<li>I love Mongodb for its documents and collection concept</li>
+
+<li>Flexibility in schema design (JSON type document store)</li>
+
+<li>Scalability - Just add up nodes and it can scale horizontally quite well</li>
+
+<li>MongoDB has a niche use case regarding Big Data</li>
+
+<li>High Availability using replica-set</li>
+
+<li>As there is no concept for SQL or JOINs, hence! high performance</li>
+</ul>
+
+<blockquote>
+<p>What else would you want from a Database, MongoDB is able to provide all at once!!</p>
+</blockquote>
+
+<h4 id='mongodb_scalability'>MongoDb Scalability</h4>
+
+<p><em>Scalability</em> is one of the complicated segments to be discussed and it&#8217;s tough to make a general statement. MongoDb has Built in <em>Auto-sharding</em> and <em>Replication</em>.</p>
+
+<h4 id='sharding'>Sharding:</h4>
+
+<p>Each shard is an independent database and collectively they form one <em>single database</em>.</p>
+
+<p>One of the much awaited features in <em>MongoDB 1.6</em> is replica sets, MongoDB replication solution providing automatic failure and recovery.</p>
+
+<h5 id='this_covers_'>This covers -</h5>
+
+<ul>
+<li>What is Replica Set?</li>
+
+<li>Replication Process</li>
+
+<li>Advantaged of <em>Replica Set</em> vs <em>Master/Slave</em></li>
+
+<li>How to set up replica set on Production Demo</li>
+</ul>
+
+<p>Below is the <strong>presentation</strong> on <strong>MongoDb</strong> scalability and high availability with Replica-Set which is covered in MongoDB meetup by me, it is short and covered a lot of enlightened point which is really helpful for the people who are novice in MongoBb. <iframe frameborder='0' height='356' src='http://www.slideshare.net/slideshow/embed_code/27617066' width='427'> </iframe></p>
+
+<h5 id='below_is_recorded_session_video'>Below is recorded session video:</h5>
+<iframe frameborder='0' height='500' src='http://www.youtube.com/embed/PSdru23y4hk' width='500'>        </iframe>
+<p>During the session I tried to explain:”<strong>Setting up replica set on production environment</strong>” through a video demo. Explanation gathered 3 instances which already have Mongo installed.</p>
+
+<h5 id='this_tutorial_consists'>This tutorial consists:</h5>
+
+<ol>
+<li>Setup the each instance of replica set</li>
+
+<li>Modify the mongodb.conf to include replica set information</li>
+
+<li>Configure the servers to include in replica set</li>
+
+<li>Cross checking, if we remove primary then secondary becomes primary or not.</li>
+</ol>
+
+<h5 id='below_is_the_tutorial_video'>Below is the tutorial video:</h5>
+<iframe frameborder='0' height='500' src='http://www.youtube.com/embed/BFSGcBHcirU' width='500'>        </iframe>
+<blockquote>
+<p>I am sure from this port, you would&#8217;ve found your own reason to love <strong>MongoDB</strong>,</p>
+</blockquote>
+        </div>
+
+        
+        <ul class="tag_box inline">
+            <li><i class="icon-folder-open"></i></li>
+            
+            
+
+
+  
+     
+    	<li><a href="/categories.html#talks-ref">
+    		talks <span>4</span>
+    	</a></li>
+    
+  
+
+
+        </ul>
+        
+
+        
+        <ul class="tag_box inline">
+            <li><i class="icon-tags"></i></li>
+            
+            
+
+
+  
+     
+    	<li><a href="/tags.html#MONGODB-ref">MONGODB <span>2</span></a></li>
+     
+    	<li><a href="/tags.html#NOSQL-ref">NOSQL <span>2</span></a></li>
+     
+    	<li><a href="/tags.html#PRESENTATION-ref">PRESENTATION <span>2</span></a></li>
+    
+  
+
+
+
+        </ul>
+        
+
+        <hr>
+        <div class="pagination">
+            <ul>
+                
+                <li class="prev"><a href="/rails/2013/08/27/Rails-3-Custom-Validators" title="Rails 3 Custom Validators">&larr; Previous</a></li>
+                
+                <li><a href="/archive.html">Archive</a></li>
+                
+                <li class="next"><a href="/englightenments/2014/01/29/3-years-to-success" title="3 Years To Success">Next &rarr;</a></li>
+                
+            </ul>
+        </div>
+        <div class="post-sharing">
+            
+        </div>
+        <hr>
+        
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_developer = 1;
+    var disqus_shortname = 'rubyiestlove'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+    </div>
+    <div class="span4">
+        <section id="side-bar" class="float visible" style="top: 20px; width: 370px;"
+         xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+    <div class="span4">
+        <img src="/assets/themes/twitter/bootstrap/img/vivek.png" class="img-circle">
+
+    </div>
+    <h3>Vivek Parihar</h3>
+
+    <ul class="inline" id="social">
+        <li>
+            <a href="mailto:vivek@weboniselab.com?subject=hi" id="sidebar-email" class="icon-envelope-alt" title="Say hi"></a>
+        </li>
+
+        <li>
+            <a href="http://twitter.com/vparihar" id="sidebar-twitter" class="icon-twitter" title="I WOULD REALLY ENJOY CONNECTING WITH YOU" style="font-size: 28px;"></a>
+        </li>
+
+        <li>
+            <a href="http://github.com/Vparihar01" id="sidebar-github" class="icon-github" title="I share and fork code here"></a>
+        </li>
+
+        <li>
+            <a href="skype:vivek.webonise?add" id="sidebar-skype" class="icon-comment" title="Feel free to add me on Skype"></a>
+        </li>
+    </ul>
+
+    <hr>
+    <h3><u>About Me, Elsewhere</u></h3>
+    <hr>
+    <p> A </b>Weboniser</b> and </b>Rubyist</b>.</br>
+        Work on open source web development technologies (<b>Ruby</b> and their frameworks like <b>Rails</b> and <b>Sinatra</b> , PHP and its framework CAKE) and mobile technologies like <b>Android</b>. Deep passion for elegant design,<i>cloud infrastructure</i>(Rackspace and Amazon Web Services, AWS, S3, EC2) and their automation, distributed applications development, systems scaling, agile development methodologies, and experimental technologies.
+        Frequent speaker at conferences.
+        Like to hack on <i>d3.js(data visulaization)</i>.
+        Hobby boxing, cricket and tracking.</p>
+</section>
+<script>
+    $('#side-bar').affix()
+</script>
+
+    </div>
+</div>
+
+
+    </div>
+    <hr>
+    <footer>
+        <p>&copy; 2014 Vivek Parihar
+            with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+            and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+    </footer>
+
+</div>
+
+
+
+
+  <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-4441606-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+</body>
+</html>
+
