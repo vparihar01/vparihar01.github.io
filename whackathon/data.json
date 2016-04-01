@@ -1,0 +1,322 @@
+{
+  "name": "Yatra Whackathon'16",
+  "children": [
+      {
+        "name": "Gurgaon",
+		"dependsOn": ["Project team participating from Gurgaon office"],
+        "children": [
+  		  { 
+  			"name": "Dream Sharing ", 
+  			"technos": ["RAJAT AGGARWAL"	,"ROHIT SAXENA",	"VINOD RAWAT",	"Prem Bharati"],
+  			"dependsOn": ["A complete integrate product that enable user to share his dream to other and ask them to comment and help ."]
+  			},
+    		  { 
+    			"name": "Black Pearl", 
+  			 "technos": ["Nishant Parashar"	,"Krishna Babu"	,"Anil Juneja",	"Himanshu Gupta"],
+    			"dependsOn": ["Integrating Facebook with your travel. Let's say you want to book a holiday package for Thailand or Hotels. NOW what?? If any of your Facebook friend has visited Thailand with any of our package then we will show you your friend name and contact details along with the package. Which helps you to choose Holiday package as well as hotels."]
+    			},
+    		  { 
+    			"name": "54 65 61 6D", 
+  			  "technos": ["Saurabh Sharma",	"Sumit Arora",	"Sanchit Aggarwal"],
+    			"dependsOn": ["App to locate famous monuments while flying over them in flights. "]
+    			},
+    		  { 
+    			"name": "Olympus", 
+  			  "technos": ["Tarni Chirag" , "Atul Kumar","Nitish"],
+    			"dependsOn": ["WhatsApp  based customer review system."]
+    			},
+    		  { 
+    			"name": "One Stop Search", 
+  			  "technos": ["Nilabh Shrivastava",	"Vishal Gupta"	,"Shubham Gupta"	,"Anuj Jangid"],
+    			"dependsOn": ["Single stop search for all mode of transportation. It will also construct routes using multiple mode of transportation's, specifically benefiting users from small cites without any airport."]
+    			},
+    		  { 
+    			"name": "Fares Analyzer & Optimizer", 
+  			  "technos": ["Rati Saurabh Saxena",	"Vishal Gupta"	,"Shubham Gupta"	,"Anuj Jangid"],
+    			"dependsOn": ["It captures and analyzes historical data across sectors, competition and dates about the fare trend. Also it adds missing routes in routes table wherever required."]
+    			},
+    		  { 
+    			"name": "Rainbow", 
+  			  "technos": ["Kumkum naz"	,"Om Prakash Duney","ajeet Kumar", "sachin jain"],
+    			"dependsOn": ["We have planned to make Mailer Tool for b2b agent "]
+    			},
+    		  { 
+    			"name": "Travel story", 
+  			  "technos": ["Ravish Jha","Ashish Mohan","Kumud sharma","Upender Dahiya"],
+    			"dependsOn": ["Our web app will take customer's through other traveler's experience/query/booking history of all the places he/she has gone with all the tits/bits of the unexplored routes. It will help them customizing or book their package from their on with minimum user inputs."]
+    			},
+    		  { 
+    			"name": "eCurrency", 
+  			  "technos": ["Amit Kumar SIngh"],
+    			"dependsOn": ["Flow of eCurrency monitored by a bank using which the customers can transfer eCash to each other directly which would basically be done by some coupon code."]
+    			},
+    		  { 
+    			"name": "Air Ninjas", 
+  			  "technos": ["Swarup Banerjee","Tushar Kanti Ghosh", "Sandeep Kumar","Manish Sharma"],
+    			"dependsOn": ["flight Stats "]
+    			},
+    		  { 
+    			"name": "Millenials", 
+  			  "technos": ["Aditya Arora","Nishant Kumar"	,"Utkarsh Sharma","Tarun Rai Tara"],
+    			"dependsOn": ["Yatra-My Timeline In this we are creating a timeline for user using the latest technologies viz virtual Reality (VR) and Artificial Intelligence(AI).Basically what we are doing is that a user can schedule his trip wether its a businees trip or a leisure trip.We are using API's of various entertainment,travel(intercity) and food related websites also the buzzintown API.Our major concern is taking care of user's every need."]
+    			},
+    		  { 
+    			"name": "Inspire Me", 
+  			  "technos": ["Lalit Mohan"	,"Mamta Chechi","Ajay Kumar Bansal","Lakshmi Chaturvedi"],
+    			"dependsOn": ["Showing hotels in a different way."]
+    			},
+    		  { 
+    			"name": "Yatra User Management System", 
+  			   "technos": ["Deepak Jindal","Munish Bansal","Gaurav Goel","Rohit Jain"],
+    			"dependsOn": ["Yatra User Management System(YUMS) will manage yatra user base and provide insightful info on user behaviour and targeted customers. This will directly help in increasing yatra market share for flights LOB. "]
+    			},
+    		  { 
+    			"name": "Network Adaptive Web-site", 
+  			  "technos": ["Vineet Kasat", "Nitin Goyal", "Amandeep Singh Trehan", "Shubham Chaudhary"],
+    			"dependsOn": ["Yatra.com opens very slow on slow networks and this hack attempts to identify network speed and render light weight pages accordingly. "]
+    			},
+    		  { 
+    			"name": "Khojo", 
+  			  "technos": ["Ankur Shukla","Manoj Deol","Priyank Jain","Prateek Ojha"],
+    			"dependsOn": ["Idea is to increase traffic on yatra's website. The core idea is more the searches, more the customers and more is the business. "]
+    			},
+    		  { 
+    			"name": "Happy Friends Happy Yatra", 
+  			  "technos": ["Navjeet Singh","Atul Singh", "Nishat Ahmad", "Meenakshi Arya"],
+    			"dependsOn": ["Its like a Yatra employee's friend and family benefits feature. Yatra employees will refer their friends to travel through Yatra with small discounts. Number of discounted bookings will be fixed per Yatra employee . "]
+    			},
+    		  { 
+    			"name": "Trip Planner", 
+  			  "technos": ["Arjun Prajapati", "Vivek Kymar Yadav", "Aparna Bhatt", "Prabhat Singh"],
+    			"dependsOn": ["In this project, we are to convince the customer to make booking of bus to attend some events or fests and for that we are providing better offers and discounts. "]
+    			},
+    		  { 
+    			"name": "E-Cash Transfer", 
+  			  "technos": ["Vidhi Malik","Shallu Mangla","Kamal Arora", "Devendra Kumar Singh"],
+    			"dependsOn": ["In this project, we are to convince the customer to make booking of bus to attend some events or fests and for that we are providing better offers and discounts. "]
+    			},
+    		  { 
+    			"name": "Hacking Mashup", 
+  			  "technos": ["Neeraj Jain", "Mukesh Yadav", "Ravinder Rawat", "Sanchit bavejaa"],
+    			"dependsOn": ["We are trying to get rid of agents in booking system through AI bots. Reference is Skype artificial bots."]
+    			},
+    		  { 
+    			"name": "JarWis", 
+  			  "technos": ["Vipul Kumar", "Razi Abbas"],
+    			"dependsOn": ["It's an Android wear app for Yatra. "]
+    			},
+    		  { 
+    			"name": "Yatra Chat Bot", 
+  			  "technos": ["Rikshav Borah", "Vishal Gupta", "Himanshu Arora"],
+    			"dependsOn": ["Yatra Chat Bot will assist the user to find hotels and Flights on dialogue conversation. Chat can be done in voice or text both. Chat Bot will provide the required results to user within the chat and user can directly book from there. "]
+    			},
+    		  { 
+    			"name": "Spot Light Search", 
+  			  "technos": ["Vineet Kasat", "Nitin Goyal", "Amandeep Singh Trehan", "Shubham Chaudhary"],
+    			"dependsOn": ["IIts similar to Macbook spotlight search. If a user wants to navigate to any link he can directly type and will get the shortcut access. "]
+    			},
+    		  { 
+    			"name": "Analytics Studio.", 
+  			  "technos": ["Aakash Mandlik","Krishna Babu","Pratik Vaishnav", "Kunal Verma"],
+    			"dependsOn": ["System which can be used for analysis of the bookings patterns.Analysis can be performed from tabular data or graphical charts. "]
+    			},
+    		  { 
+    			"name": "Implant Locator", 
+  			  "technos": ["Rajeev Jain","Sanjeev Ranjan Tiwari","Arpit Nogama","Pramod Kumar Pal"],
+    			"dependsOn": ["Tool will be useful in locating the implants around the world for a given duration/destination.  "]
+    			},
+    		  { 
+    			"name": "Virtual Tour", 
+  			  "technos": ["Rohit Garg","Ashank Tyagi","Sunny Kumar","Bipin Aswal, Tarveen"],
+    			"dependsOn": ["A google map view of holiday tours. "]
+    			},
+    		  { 
+    			"name": "Trip Planner", 
+  			  "technos": ["Arjun Prajapati", "Vivek Kymar Yadav", "Aparna Bhatt", "Prabhat Singh"],
+    			"dependsOn": ["In this project, we are to convince the customer to make booking of bus to attend some events or fests and for that we are providing better offers and discounts. "]
+    			},
+    		  { 
+    			"name": "Social Media Consolidator", 
+  			  "technos": ["Ayoosh Joshi", "Amberish Singh","Shafiur Rahman"],
+    			"dependsOn": ["The application aims to consolidate user expression across various social networking platforms such as Twitter, LinkedIn, Facebook, Google+ and PInterest. It is a scheduled application that invokes the search API of each platform at a configurable interval and retrieves all user interactions on the specified platform which have a mention of the Yatra account or Yatra.com name. These interactions will then be saved in our database and loaded into a queue on a page. This page is intended to be monitored by a team of agents who pick up an interaction, reply to the user on the particular platform and close the interaction, if considered resolved. "]
+    			},
+    		  { 
+    			"name": "Yatra Browser Extension", 
+  			  "technos": ["Vaibhav Paliwal","Piyush Dureja","Paritosh Moghe", "Sri Ganaga"],
+    			"dependsOn": ["- A Browser Extension, to compare price between different travel sites. - Displaying personalized Offer/Promo Code of Yatra. - Redirecting traffic to Yatra. - Advertising Yatra's different products.- Gathering potential customers behavioral across competitors. - Doing analysis on competitor data. - Building strategy based on analytical data. - Running campaign and offers based on that data "]
+    			},
+    		  { 
+    			"name": "ERT", 
+  			  "technos": ["Rohit Garg"],
+    			"dependsOn": ["User Trend Analysis!!!.....The response will be shown !! "]
+    			},
+    		  { 
+    			"name": "Fresco", 
+  			  "technos": ["Arjun Prajapati", "Vivek Kymar Yadav", "Aparna Bhatt", "Prabhat Singh"],
+    			"dependsOn": ["Fresco"]
+    			},
+    		  { 
+    			"name": "C2Y Business", 
+  			  "technos": ["Vaneet Kumar","Sharad Kumar Varshney","Ravish Jha","Nikhil"],
+    			"dependsOn": ["Our Hack is to get good quality travel images from customer for holiday package and we will provide them ecash. "]
+    			},
+    		  { 
+    			"name": "Odd-Even", 
+  			  "technos": ["Manish","Gaurav Kumar","Jagwanti Sindhu","Sachin Bansal"],
+    			"dependsOn": ["It is app which help in car pool.In a smart and Secured way."]
+    			},
+    		  { 
+    			"name": "Deja Vu", 
+  			  "technos": ["Vipul Kumar", "Sanchi Gupta", "Razi Abbas"],
+    			"dependsOn": ["A rating and review system for flights. "]
+    			},
+    		  { 
+    			"name": "YPeX", 
+  			  "technos": ["Atif","Rahman","Saurabh"],
+    			"dependsOn": ["yatra performance Experience on single place "]
+    			},
+    		  { 
+    			"name": "Yatra Apps Bot", 
+  			  "technos":  ["Atif Purshottam"	,"bharat",	"Sunny Ramdas"],
+    			"dependsOn": ["automated bot system on mobile "]
+    			},
+    		  { 
+    			"name": "Code 2 Live", 
+  			  "technos": ["Pawan", "Pardeep rathi" , "rahman", "saurabh"],
+    			"dependsOn": ["Auto Production servers deployement "]
+    			}
+
+        ]
+      },
+    {
+      "name": "Heyderabad",
+	  "dependsOn": ["Project team participating from Heyderabad office"],
+      "children": [
+		  { 
+			"name": "Blockers", 
+			"technos": ["Ravikiran Putta", "Swathi G", "Sayali Wadi","Asad"],
+			"dependsOn": ["Load  genarator"]
+			},
+  		  { 
+  			"name": "One Ring Yatra Service", 
+			 "technos": ["Revati Lenka", "Srinivas Nagorkar", "Srikanth Bringu","Raviteja V"],
+  			"dependsOn": ["When a customer gives a missed call to a dedicated phone number, Yatra will send upcoming booking details to the customer. This solves the problem of getting booking details without internet and at zero cost. One ring service can also be used for taking customer's feedback and even providing them with immediate assistance during their stay at hotels."]
+  			},
+  		  { 
+  			"name": "Magic Hotels", 
+			  "technos": ["Mayank Jain", "Shefali sawariya", "Sagnya"],
+  			"dependsOn": ["Portal for Local city experience"]
+  			},
+  		  { 
+  			"name": "SightSeeings Planner", 
+
+			  "technos": ["Sonika", "Ramya"],
+  			"dependsOn": ["Suggests user the sightseeings to visit in a particular destination by taking the user criteria and preferences."]
+  			},
+  		  { 
+  			"name": "Travel Companion", 
+			  "technos": ["Sravan Kanchi", "Archana Pal","Neelam Bhawsar","Shivi Saxena"],
+  			"dependsOn": ["It will provide itinerary suggestions for things to do and things to carry for the trip you choose from Yatra."]
+  			},
+  		  { 
+  			"name": "Yatra Connect", 
+			  "technos": ["Yugal Sharma", "Atul Sigh","Sakshi Agrawal","Ashish Aggarwal"],
+  			"dependsOn": ["Connecting people travelling on same flight so they can share cab from airport or make travel arrangements together."]
+  			}
+      ]
+    },
+    {
+      "name": "Bangalore",
+	  "dependsOn": ["Project team participating from Bangalore office"],
+      "children": [
+		  { 
+			"name": "Yatra HandPicked", 
+			"technos": ["Mayukh Chakroborty", "Ashok Pradhan", "Rahul Anand","Sourav Saha"],
+			"dependsOn": ["The idea is to show group of hotel personalized to a user based on his previous history with yatra.  It will basically predict group of hotels from the list of all hotel based on current trend and user's previous activity."]
+			},
+  		  { 
+  			"name": "Image Search on Yatra", 
+			 "technos": ["Sourav", "Mayuk", "Rahul","Ashok"],
+  			"dependsOn": ["The idea is to allow users to search hotels/room/rateplans based on images they have.It allows users to land directly to the rateplan or room without concerning about hotel."]
+  			},
+  		  { 
+  			"name": "Travel Assitance", 
+			  "technos": ["Abhishek Jain", "Sumit Saini", "Swetank ","Pravesh Kumar"],
+  			"dependsOn": ["There are lot of travel apps in market and all deals with selling tickets. No one has look into pain of the user while he/she is traveling. This app is basically a complete assistance required while traveling. -Automatic flight sms read and track upcoming trips -Track flight status and notify user -Flight Utility -webcheckin -meals and baggage -fare rules -Offline and online cab booking. -Weather -Nearby events, restaurant -Nearby hotels -Weekend gateway "]
+  			},
+  		  { 
+  			"name": "Jarvis", 
+			  "technos": ["PK, Mayank, Mayukh, Ashok", "PK"],
+  			"dependsOn": ["Automation of call centre using Amazon Voice Service We are targeting to provide a facility for user to track hotel offers and availability for a duration"]
+  			},
+  		  { 
+  			"name": "Osborn", 
+			  "technos": ["Mayank Kulshreshtha",	"PK",	"mayukh"	,"Ashok"],
+  			"dependsOn": ["User can register to follow up for a hotel and will be informed about promotions and offers for a duration"]
+  			},
+  		  { 
+  			"name": "Flight Tracker", 
+			  "technos": ["Dharmendra Kumar Pathak",	"Akshay Nagpurkar",	"Kumar Akash","Harpreet Singh Bedi"],
+  			"dependsOn": ["Yatra's extra utility services to provide tracking feature of any given flight in real time."]
+  			},
+  		  { 
+  			"name": "NextGen Devops", 
+			  "technos": ["Gokulnath Arjunan"	,"Nabin K Sutar"],
+  			"dependsOn": ["Automation of deployment process using container technology open source tools. "]
+  			},
+  		  { 
+  			"name": "HackSters", 
+			  "technos": ["Gopi Krishna",	"pavan kumar" ,	"prasad jakka"],
+  			"dependsOn": ["Implementing RxJava design paradigm in android."]
+  			},
+  		  { 
+  			"name": "MRJR", 
+			  "technos": ["Jayram raju"	,"kaveti raviteja", 	"mayank jain",	"rahul kumar"],
+  			"dependsOn": ["NA"]
+  			},
+  		  { 
+  			"name": "Fab4", 
+			  "technos": ["Kumar Reddy",	"KB Shashank",	"G.Venkata"	,"Vijay"],
+  			"dependsOn": ["We are creating a platform to support add-ons for travel. "]
+  			},
+  		  { 
+  			"name": "Partyzz GL", 
+			  "technos": ["Ashish Prabhakar Nair"],
+  			"dependsOn": ["Online platform for party organizers to accept Guestlist entries . Platform for party revellers to find parties , enter their names into guestlist. Party organizer gets email alert on every GL submission. Customers get email confirmation when organizer approves their name on GL. "]
+  			},
+  		  { 
+  			"name": "Hotel Overview", 
+			  "technos": ["M R PENCHALAIAH"	,"Ashish Das"	,"PRASAD RAO KOLLI"],
+  			"dependsOn": ["Showing hotels in a different way."]
+  			},
+  		  { 
+  			"name": "Yatra Mantra", 
+			  "technos": ["Varun Ahuja"	,"Rohit B Nag"],
+  			"dependsOn": ["Its all about Travel !! ... "]
+  			},
+  		  { 
+  			"name": "TravelExperience", 
+			  "technos": ["Somana Sarath Kumar"],
+  			"dependsOn": ["Android app where you can virtually travel across the world through VR. "]
+  			},
+  		  { 
+  			"name": "Preference Search", 
+			  "technos": ["Kumar Gaurav",	"Arijit Roy"	,"Aditya Pandey"	,"Gyanendra"],
+  			"dependsOn": ["We want to focus on those users who come to app, search hotels but dont book hotels for some reason. We want to focus on those reasons and provide users best available hotels/deals to user in real time. "]
+  			},
+  		  { 
+  			"name": "Product Tracker", 
+			  "technos": ["Ajay"	,"Muralidhara Juluri"	,"Shaunak Das"],
+  			"dependsOn": ["A utility web/app solution to track any software product's life cycle. "]
+  			},
+  		  { 
+  			"name": "Voice Based Query System", 
+			  "technos": ["Shaunak Das","Muralidhara Juluri",	"Ajay Kumar"],
+  			"dependsOn": ["A solution which will use your voice and respond you smartly. "]
+  			}
+
+      ]
+    }
+  ]
+  
+}
